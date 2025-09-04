@@ -13,7 +13,9 @@ import {
     DeleteOutlined,
     CheckOutlined,
     CloseOutlined,
-    BgColorsOutlined
+    BgColorsOutlined,
+    MoonFilled,
+    SunFilled
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
@@ -32,164 +34,168 @@ import {
     Modal,
     Form,
     Input,
-    Space
+    Space,
+    ConfigProvider,
+    Switch
 } from "antd";
 
 const { Header, Content, Footer } = Layout;
-let tree2 =
-{
-    "nodeID": "Node A",
-    "nodeName": "Node A",
-    "nodeDescription": "# Hi, *Pluto*!",
-    "nodeColor": "Default",
-    "edgeName": "some edge name",
-    "showDescription": false,
-    "showChildren": true,
-    "children": [
-        {
-            "nodeID": "Node C",
-            "nodeName": "Node C",
-            "nodeDescription": `($\\frac{1}{2}$)`,
-            "nodeColor": "Default",
-            "edgeName": "",
-            "showDescription": false,
-            "showChildren": false,
-            "children": []
-        },
-        {
-            "nodeID": "Node B",
-            "nodeName": "Node B",
-            // "nodeName": "Node B Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
-            "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam nam kha pariatur ab",
-            "nodeColor": "Default",
-            "edgeName": "",
-            "showDescription": true,
-            "showChildren": false,
-            "children": [
-                {
-                    "nodeID": "Node E",
-                    "nodeName": "Node E",
-                    // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
-                    "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                    "nodeColor": "Default",
-                    "edgeName": "",
-                    "showDescription": true,
-                    "showChildren": true,
-                    "children": [
-                    ],
-                },
-                {
-                    "nodeID": "Node G",
-                    "nodeName": "Node G",
-                    // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
-                    "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                    "nodeColor": "Default",
-                    "edgeName": "",
-                    "showDescription": false,
-                    "showChildren": true,
-                    "children": [
-                        {
-                            "nodeID": "Node I",
-                            "nodeName": "Node I",
-                            "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                            "nodeColor": "Default",
-                            "edgeName": "",
-                            "showDescription": true,
-                            "showChildren": false,
-                            "children": [
-                                {
-                                    "nodeID": "Node K",
-                                    "nodeName": "Node K",
-                                    "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                                    "nodeColor": "Default",
-                                    "edgeName": "",
-                                    "showDescription": true,
-                                    "showChildren": false,
-                                    "children": [
-                                    ]
-                                },
-                                {
-                                    "nodeID": "Node L",
-                                    "nodeName": "Node L",
-                                    "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                                    "nodeColor": "Default",
-                                    "edgeName": "",
-                                    "showDescription": true,
-                                    "showChildren": false,
-                                    "children": []
-                                }
-                            ]
-                        },
-                        {
-                            "nodeID": "Node J",
-                            "nodeName": "Node J",
-                            "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                            "nodeColor": "Default",
-                            "edgeName": "",
-                            "showDescription": true,
-                            "showChildren": false,
-                            "children": [
-                            ]
-                        }
-                    ]
-                }, {
-                    "nodeID": "Node H",
-                    "nodeName": "Node H",
-                    // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
-                    "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                    "nodeColor": "Default",
-                    "edgeName": "",
-                    "showDescription": true,
-                    "showChildren": false,
-                    "children": [
+let tree2 = [
+    {
+        "nodeID": "Node A",
+        "nodeName": "Node A",
+        "nodeDescription": "# Hi, *Pluto*!",
+        "nodeColor": "Default",
+        "edgeName": "some edge name",
+        "showDescription": false,
+        "showChildren": true,
+        "children": [
+            {
+                "nodeID": "Node C",
+                "nodeName": "Node C",
+                "nodeDescription": `($\\frac{1}{2}$)`,
+                "nodeColor": "Default",
+                "edgeName": "",
+                "showDescription": false,
+                "showChildren": false,
+                "children": []
+            },
+            {
+                "nodeID": "Node B",
+                "nodeName": "Node B",
+                // "nodeName": "Node B Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
+                "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam nam kha pariatur ab",
+                "nodeColor": "Default",
+                "edgeName": "",
+                "showDescription": true,
+                "showChildren": false,
+                "children": [
+                    {
+                        "nodeID": "Node E",
+                        "nodeName": "Node E",
+                        // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
+                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
+                        "nodeColor": "Default",
+                        "edgeName": "",
+                        "showDescription": true,
+                        "showChildren": true,
+                        "children": [
+                        ],
+                    },
+                    {
+                        "nodeID": "Node G",
+                        "nodeName": "Node G",
+                        // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
+                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
+                        "nodeColor": "Default",
+                        "edgeName": "",
+                        "showDescription": false,
+                        "showChildren": true,
+                        "children": [
+                            {
+                                "nodeID": "Node I",
+                                "nodeName": "Node I",
+                                "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
+                                "nodeColor": "Default",
+                                "edgeName": "",
+                                "showDescription": true,
+                                "showChildren": false,
+                                "children": [
+                                    {
+                                        "nodeID": "Node K",
+                                        "nodeName": "Node K",
+                                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
+                                        "nodeColor": "Default",
+                                        "edgeName": "",
+                                        "showDescription": true,
+                                        "showChildren": false,
+                                        "children": [
+                                        ]
+                                    },
+                                    {
+                                        "nodeID": "Node L",
+                                        "nodeName": "Node L",
+                                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
+                                        "nodeColor": "Default",
+                                        "edgeName": "",
+                                        "showDescription": true,
+                                        "showChildren": false,
+                                        "children": []
+                                    }
+                                ]
+                            },
+                            {
+                                "nodeID": "Node J",
+                                "nodeName": "Node J",
+                                "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
+                                "nodeColor": "Default",
+                                "edgeName": "",
+                                "showDescription": true,
+                                "showChildren": false,
+                                "children": [
+                                ]
+                            }
+                        ]
+                    }, {
+                        "nodeID": "Node H",
+                        "nodeName": "Node H",
+                        // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
+                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
+                        "nodeColor": "Default",
+                        "edgeName": "",
+                        "showDescription": true,
+                        "showChildren": false,
+                        "children": [
 
-                    ]
-                },
-                {
-                    "nodeID": "Node D",
-                    "nodeName": "Node D",
-                    "nodeDescription": "",
-                    "nodeColor": "Default",
-                    "edgeName": "",
-                    "showDescription": true,
-                    "showChildren": true,
-                    "children": [
-                        {
-                            "nodeID": "Node F",
-                            "nodeName": "Node F",
-                            "nodeDescription": "Lorem ipsum dolor",
-                            "nodeColor": "Default",
-                            "edgeName": "",
-                            "showDescription": false,
-                            "showChildren": false,
-                            "children": []
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "nodeID": "Node M",
-            "nodeName": "Node M",
-            "nodeDescription": `($\\frac{1}{2}$)`,
-            "nodeColor": "Default",
-            "edgeName": "",
-            "showDescription": false,
-            "showChildren": false,
-            "children": []
-        },
-        {
-            "nodeID": "Node N",
-            "nodeName": "Node N",
-            "nodeDescription": `($\\frac{1}{2}$)`,
-            "nodeColor": "Default",
-            "edgeName": "",
-            "showDescription": false,
-            "showChildren": false,
-            "children": []
-        },
-    ]
-}
+                        ]
+                    },
+                    {
+                        "nodeID": "Node D",
+                        "nodeName": "Node D",
+                        "nodeDescription": "",
+                        "nodeColor": "Default",
+                        "edgeName": "",
+                        "showDescription": true,
+                        "showChildren": true,
+                        "children": [
+                            {
+                                "nodeID": "Node F",
+                                "nodeName": "Node F",
+                                "nodeDescription": "Lorem ipsum dolor",
+                                "nodeColor": "Default",
+                                "edgeName": "",
+                                "showDescription": false,
+                                "showChildren": false,
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "nodeID": "Node M",
+                "nodeName": "Node M",
+                "nodeDescription": `($\\frac{1}{2}$)`,
+                "nodeColor": "Default",
+                "edgeName": "",
+                "showDescription": false,
+                "showChildren": false,
+                "children": []
+            },
+            {
+                "nodeID": "Node N",
+                "nodeName": "Node N",
+                "nodeDescription": `($\\frac{1}{2}$)`,
+                "nodeColor": "Default",
+                "edgeName": "",
+                "showDescription": false,
+                "showChildren": false,
+                "children": []
+            },
+        ]
+    }
+]
+
 
 const CurrentTreeContext = createContext(null);
 
@@ -289,12 +295,22 @@ function generateRandomString(length) {
 
 function toggleShowDescription(node, currentTree, setCurrentTree) {
     let cloneTree = JSON.parse(JSON.stringify(currentTree))
-    recursiveModify(cloneTree, node.nodeID, "showDescription", null)
+    for (let rootNode of cloneTree) {
+        let result = recursiveModify(rootNode, node.nodeID, "showDescription", null)
+        if (result == true) {
+            break
+        }
+    }
     setCurrentTree(cloneTree)
 }
 function toggleShowChildren(node, currentTree, setCurrentTree) {
     let cloneTree = JSON.parse(JSON.stringify(currentTree))
-    recursiveModify(cloneTree, node.nodeID, "showChildren", null)
+    for (let rootNode of cloneTree) {
+        let result = recursiveModify(rootNode, node.nodeID, "showChildren", null)
+        if (result == true) {
+            break
+        }
+    }
     setCurrentTree(cloneTree)
 }
 
@@ -401,18 +417,26 @@ const NodeCard = ({ node }) => {
         },
     ];
     function handleRenameNode(query) {
-        console.log("query", query)
         const newName = query[`nodeName ${node.nodeID}`]
         let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        recursiveModify(cloneTree, node.nodeID, "nodeName", newName)
+        for (let rootNode of cloneTree) {
+            let result = recursiveModify(rootNode, node.nodeID, "nodeName", newName)
+            if (result == true) {
+                break
+            }
+        }
         setShowNodeNameForm(false)
         setCurrentTree(cloneTree)
     }
     function handleRewriteDescription(query) {
         const newDes = query[`nodeDescription ${node.nodeID}`];
-        console.log("newDes", newDes)
         let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        recursiveModify(cloneTree, node.nodeID, "nodeDescription", newDes)
+        for (let rootNode of cloneTree) {
+            let result = recursiveModify(rootNode, node.nodeID, "nodeDescription", newDes)
+            if (result == true) {
+                break
+            }
+        }
         setShowDescriptionForm(false)
         setCurrentTree(cloneTree)
     }
@@ -458,24 +482,35 @@ const NodeCard = ({ node }) => {
     }
     function addChild() {
         let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        recursiveAddChild(cloneTree, node.nodeID, "showChildren")
+        for (let rootNode of cloneTree) {
+            let result = recursiveAddChild(rootNode, node.nodeID)
+            if (result == true) {
+                break
+            }
+        }
         setCurrentTree(cloneTree)
     }
     function handleDeleteNode() {
         let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        recursiveDeleteNode(cloneTree, node.nodeID)
+        for (let rootNode of cloneTree) {
+            let result = recursiveDeleteNode(rootNode, node.nodeID)
+            if (result == true) {
+                break
+            }
+        }
         setIsModalOpen(false)
         setCurrentTree(cloneTree)
     }
     function handleReColorNode(e) {
-        console.log("color", e)
         let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        recursiveModify(cloneTree, node.nodeID, "nodeColor", `${e.key}`)
+        for (let rootNode of cloneTree) {
+            let result = recursiveModify(rootNode, node.nodeID, "nodeColor", `${e.key}`)
+            if (result == true) {
+                break
+            }
+        }
         setCurrentTree(cloneTree)
     }
-    const onFinish = values => {
-        console.log('Success:', values);
-    };
     const onFinishFailed = errorInfo => {
         console.log('Failed:', errorInfo);
     };
@@ -760,6 +795,7 @@ function App() {
     const [currentTree, setCurrentTree] = useState(tree2);
     const [expandAll, setExpandAll] = useState(false);
     const [showAll, setShowAll] = useState(false);
+    let [modeTheme, setModeTheme] = useState("light")
     console.log(currentTree)
     function recursiveAll(currNode, currAtt, contentToModify) {
         currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
@@ -769,17 +805,36 @@ function App() {
     }
     function handleExpandAll() {
         let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        recursiveAll(cloneTree, "showChildren", !expandAll)
+        for (let rootNode of cloneTree) {
+            let result = recursiveAll(rootNode, "showChildren", !expandAll)
+            if (result == true) {
+                break
+            }
+        }
         setExpandAll(!expandAll)
         setCurrentTree(cloneTree)
     }
     function handleShowAll() {
         let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        recursiveAll(cloneTree, "showDescription", !showAll)
+        for (let rootNode of cloneTree) {
+            let result = recursiveAll(rootNode, "showDescription", !showAll)
+            if (result == true) {
+                break
+            }
+        }
         setShowAll(!showAll)
         setCurrentTree(cloneTree)
     }
     useEffect(() => {
+        let modeThemeStorage = localStorage.getItem("modeTheme")
+        if (modeThemeStorage == "dark") {
+            localStorage.setItem("modeTheme", "dark")
+            setModeTheme("dark")
+        }
+        else {
+            localStorage.setItem("modeTheme", "light")
+            setModeTheme("light")
+        }
         const handleBeforeUnload = (event) => {
             event.preventDefault();
             event.returnValue = "";
@@ -793,26 +848,51 @@ function App() {
     }, []);
     return (
         <>
-            <CurrentTreeContext.Provider value={{ currentTree, setCurrentTree }}>
-                <Content style={{ padding: '48px' }}>
-                    <Flex style={{ marginBottom: 40, paddingLeft: 100 }} gap={"small"}>
-                        <Button onClick={handleExpandAll} type="default" shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
-                            {expandAll ? "Collapse all" : "Expand all"}
-                        </Button>
-                        <Button onClick={handleShowAll} type="default" shape="default" icon={showAll ? <EyeOutlined /> : <EyeInvisibleOutlined />}>
-                            {showAll ? "Hide all" : "Show all"}
-                        </Button>
+            <ConfigProvider theme={{
+                algorithm: modeTheme == "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm
+            }}>
+                <CurrentTreeContext.Provider value={{ currentTree, setCurrentTree }}>
+                    <Layout
+                        style={{
+                            height: "100%",
+                            overflowY: "scroll", padding: 16,
+                            scrollbarColor: "red"
+                        }}
+                    >
+                        <Flex style={{ marginBottom: 40, paddingLeft: 100 }} gap={"small"}>
+                            <Button onClick={handleExpandAll} type="default" shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
+                                {expandAll ? "Collapse all" : "Expand all"}
+                            </Button>
+                            <Button onClick={handleShowAll} type="default" shape="default" icon={showAll ? <EyeOutlined /> : <EyeInvisibleOutlined />}>
+                                {showAll ? "Hide all" : "Show all"}
+                            </Button>
+                            <Switch checked={modeTheme == "light"}
+                                unCheckedChildren={<MoonFilled />}
+                                checkedChildren={<SunFilled />}
+                                onClick={(checked, event) => {
+                                    if (checked) {
+                                        localStorage.setItem("modeTheme", "light")
+                                        setModeTheme("light")
+                                    }
+                                    else {
+                                        localStorage.setItem("modeTheme", "dark")
+                                        setModeTheme("dark")
+                                    }
+                                }} />
+                        </Flex>
 
-                    </Flex>
+                        {currentTree?.length > 0 ? <>
+                            {
+                                currentTree.map((child, index) => <SpiderNode key={child.nodeID} node={child} nodeType={"root"} />)
+                            }
+                            {
+                                currentTree.map((child, index) => <FolderNode key={child.nodeID} node={child} nodeType={"root"} />)
+                            }
+                        </> : <></>}
 
-                    {currentTree ? <>
-                        <SpiderNode node={currentTree} nodeType={"root"} />
-                        <FolderNode node={currentTree} nodeType={"root"} />
-                    </> : <></>}
-
-                </Content>
-
-            </CurrentTreeContext.Provider>
+                    </Layout>
+                </CurrentTreeContext.Provider>
+            </ConfigProvider>
         </>
     );
 }
