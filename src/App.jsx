@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, React, useEffect, useRef, useCallback } from 'react';
-import { Breadcrumb, Layout, Menu, theme, Tree } from 'antd';
+import { Breadcrumb, Layout, Menu, theme } from 'antd';
 import {
     EditOutlined,
     EllipsisOutlined,
@@ -46,233 +46,14 @@ import {
 } from "antd";
 
 const { Header, Content, Footer } = Layout;
-let tree2 = [
-    {
-        "nodeID": "Node A",
-        "nodeName": "Node A",
-        "nodeDescription": "# Hi, *Pluto*!",
-        "nodeColor": "Default",
-        "edgeName": "some edge name",
-        "showDescription": false,
-        "showChildren": true,
-        "children": [
-            {
-                "nodeID": "Node C",
-                "nodeName": "Node C",
-                "nodeDescription": `($\\frac{1}{2}$)`,
-                "nodeColor": "Default",
-                "edgeName": "",
-                "showDescription": false,
-                "showChildren": false,
-                "children": []
-            },
-            {
-                "nodeID": "Node B",
-                "nodeName": "Node B",
-                // "nodeName": "Node B Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
-                "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur abLorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam nam kha pariatur ab",
-                "nodeColor": "Default",
-                "edgeName": "",
-                "showDescription": true,
-                "showChildren": false,
-                "children": [
-                    {
-                        "nodeID": "Node E",
-                        "nodeName": "Node E",
-                        // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
-                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                        "nodeColor": "Default",
-                        "edgeName": "",
-                        "showDescription": true,
-                        "showChildren": true,
-                        "children": [
-                        ],
-                    },
-                    {
-                        "nodeID": "Node G",
-                        "nodeName": "Node G",
-                        // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
-                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                        "nodeColor": "Default",
-                        "edgeName": "",
-                        "showDescription": false,
-                        "showChildren": true,
-                        "children": [
-                            {
-                                "nodeID": "Node I",
-                                "nodeName": "Node I",
-                                "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                                "nodeColor": "Default",
-                                "edgeName": "",
-                                "showDescription": true,
-                                "showChildren": false,
-                                "children": [
-                                    {
-                                        "nodeID": "Node K",
-                                        "nodeName": "Node K",
-                                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                                        "nodeColor": "Default",
-                                        "edgeName": "",
-                                        "showDescription": true,
-                                        "showChildren": false,
-                                        "children": [
-                                        ]
-                                    },
-                                    {
-                                        "nodeID": "Node L",
-                                        "nodeName": "Node L",
-                                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                                        "nodeColor": "Default",
-                                        "edgeName": "",
-                                        "showDescription": true,
-                                        "showChildren": false,
-                                        "children": []
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "Node J",
-                                "nodeName": "Node J",
-                                "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                                "nodeColor": "Default",
-                                "edgeName": "",
-                                "showDescription": true,
-                                "showChildren": false,
-                                "children": [
-                                ]
-                            }
-                        ]
-                    }, {
-                        "nodeID": "Node H",
-                        "nodeName": "Node H",
-                        // "nodeName": "Node E Lorem ipsum dolor sit amet consectetur adipisicing elit. Totam voluptate id minus optio, assumenda delectus debitis nesciunt ratione quaerat cum esse porro, accusantium voluptatum temporibus dicta dolor aliquam molestiae adipisci?",
-                        "nodeDescription": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus deleniti in eum asperiores aliquid laboriosam fuga ullam reprehenderit suscipit. Nulla ullam repellat ipsum vitae nesciunt magni molestiae totam pariatur ab!",
-                        "nodeColor": "Default",
-                        "edgeName": "",
-                        "showDescription": true,
-                        "showChildren": false,
-                        "children": [
-
-                        ]
-                    },
-                    {
-                        "nodeID": "Node D",
-                        "nodeName": "Node D",
-                        "nodeDescription": "",
-                        "nodeColor": "Default",
-                        "edgeName": "",
-                        "showDescription": true,
-                        "showChildren": true,
-                        "children": [
-                            {
-                                "nodeID": "Node F",
-                                "nodeName": "Node F",
-                                "nodeDescription": "Lorem ipsum dolor",
-                                "nodeColor": "Default",
-                                "edgeName": "",
-                                "showDescription": false,
-                                "showChildren": false,
-                                "children": []
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "nodeID": "Node M",
-                "nodeName": "Node M",
-                "nodeDescription": `($\\frac{1}{2}$)`,
-                "nodeColor": "Default",
-                "edgeName": "",
-                "showDescription": false,
-                "showChildren": false,
-                "children": []
-            },
-            {
-                "nodeID": "Node N",
-                "nodeName": "Node N",
-                "nodeDescription": `($\\frac{1}{2}$)`,
-                "nodeColor": "Default",
-                "edgeName": "",
-                "showDescription": false,
-                "showChildren": false,
-                "children": []
-            },
-        ]
-    }
-]
 
 
-const CurrentTreeContext = createContext(null);
+
+const CurrentMapContext = createContext(null);
 
 let radiusAmount = 12
 let cardWidth = 200
 let marginValue = 12
-
-function moveNodeBeforeSibling(tree, id1, id2) {
-    // Helper: deep clone to ensure immutability
-    const clone = (obj) => JSON.parse(JSON.stringify(obj));
-
-    const clonedTree = clone(tree);
-
-    // Helper: find and remove a node by ID, returning [removedNode, newTree]
-    function removeNode(node, targetId) {
-        if (!node.children) return [null, node];
-
-        for (let i = 0; i < node.children.length; i++) {
-            if (node.children[i].nodeID === targetId) {
-                const removed = node.children[i];
-                return [removed, {
-                    ...node,
-                    children: [
-                        ...node.children.slice(0, i),
-                        ...node.children.slice(i + 1)
-                    ]
-                }];
-            }
-        }
-
-        // Recursive search
-        let newChildren = [];
-        let removedNode = null;
-        for (let child of node.children) {
-            const [removed, updatedChild] = removeNode(child, targetId);
-            if (removed) removedNode = removed;
-            newChildren.push(updatedChild);
-        }
-        return [removedNode, { ...node, children: newChildren }];
-    }
-
-    // Helper: insert node before sibling
-    function insertBefore(node, insertNode, targetId) {
-        if (!node.children) return node;
-
-        const idx = node.children.findIndex(c => c.nodeID === targetId);
-        if (idx !== -1) {
-            return {
-                ...node,
-                children: [
-                    ...node.children.slice(0, idx),
-                    insertNode,
-                    ...node.children.slice(idx)
-                ]
-            };
-        }
-
-        return {
-            ...node,
-            children: node.children.map(c => insertBefore(c, insertNode, targetId))
-        };
-    }
-
-    // Step 1: Remove id1 from tree
-    const [removedNode, treeWithoutId1] = removeNode(clonedTree, id1);
-    if (!removedNode) throw new Error(`Node ${id1} not found`);
-
-    // Step 2: Insert removedNode before id2
-    const newTree = insertBefore(treeWithoutId1, removedNode, id2);
-    return newTree;
-}
 
 
 function recursiveModify(currNode, idToModify, attrModify, contentToModify) {
@@ -299,25 +80,15 @@ function generateRandomString(length) {
     return result;
 }
 
-function toggleShowDescription(node, currentTree, setCurrentTree) {
-    let cloneTree = JSON.parse(JSON.stringify(currentTree))
-    for (let rootNode of cloneTree) {
-        let result = recursiveModify(rootNode, node.nodeID, "showDescription", null)
-        if (result == true) {
-            break
-        }
-    }
-    setCurrentTree(cloneTree)
+function toggleShowDescription(node, currentMap, setCurrentMap) {
+    let cloneMap = JSON.parse(JSON.stringify(currentMap))
+    recursiveModify(cloneMap, node.nodeID, "showDescription", null)
+    setCurrentMap(cloneMap)
 }
-function toggleShowChildren(node, currentTree, setCurrentTree) {
-    let cloneTree = JSON.parse(JSON.stringify(currentTree))
-    for (let rootNode of cloneTree) {
-        let result = recursiveModify(rootNode, node.nodeID, "showChildren", null)
-        if (result == true) {
-            break
-        }
-    }
-    setCurrentTree(cloneTree)
+function toggleShowChildren(node, currentMap, setCurrentMap) {
+    let cloneMap = JSON.parse(JSON.stringify(currentMap))
+    recursiveModify(cloneMap, node.nodeID, "showChildren", null)
+    setCurrentMap(cloneMap)
 }
 
 function findAndPopNode(currNode, idToFind) {
@@ -354,30 +125,13 @@ function findAndMoveNode(currNode, nodeToMove, idToFind) {
     }
 }
 
-function handleMoveNode(id1, id2, currentTree, setCurrentTree) {
-    let cloneTree = JSON.parse(JSON.stringify(currentTree))
-    let nodeToMove = null
-    for (let rootNode of cloneTree) {
-        nodeToMove = findAndPopNode(rootNode, id1)
-        if (nodeToMove != null) {
-            break
-        }
+function handleMoveNode(id1, id2, currentMap, setCurrentMap) {
+    if (id1 != currentMap.nodeID && id2 != currentMap.nodeID) {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        let nodeToMove = findAndPopNode(cloneMap, id1)
+        findAndMoveNode(cloneMap, nodeToMove, id2)
+        setCurrentMap(cloneMap)
     }
-    console.log("nodeToMove", nodeToMove)
-    const index = cloneTree.findIndex(obj => obj.nodeID === id2);
-    console.log("temp index", index)
-    if (index !== -1) {
-        cloneTree.splice(index, 0, nodeToMove)
-    }
-    else {
-        for (let childNode of cloneTree) {
-            let result = findAndMoveNode(childNode, nodeToMove, id2)
-            if (result == true) {
-                break
-            }
-        }
-    }
-    setCurrentTree(cloneTree)
 }
 function newNodeTemplate() {
     return {
@@ -396,11 +150,11 @@ function newNodeTemplate() {
 const LeftLine = ({ node, nodeType }) => {
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
-    const { currentTree, setCurrentTree } = useContext(CurrentTreeContext);
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     return (
         <>
             <Flex className='LeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
-                <div onClick={() => { toggleShowDescription(node, currentTree, setCurrentTree) }} style={{
+                <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
                     caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
                     borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
                     borderLeft: nodeType == "bot" ? `1px solid ${lineColor}` : "",
@@ -408,7 +162,7 @@ const LeftLine = ({ node, nodeType }) => {
                 }}>
 
                 </div>
-                <div onClick={() => { toggleShowChildren(node, currentTree, setCurrentTree) }} style={{
+                <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
                     caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
                     borderTop: (nodeType == "top" || nodeType == "mid") ? `1px solid ${lineColor}` : "",
                     borderLeft: nodeType == "top" ? `1px solid ${lineColor}` : "",
@@ -423,7 +177,7 @@ const LeftLine = ({ node, nodeType }) => {
 const NodeCard = ({ node }) => {
     let antdTheme = theme.useToken()
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { currentTree, setCurrentTree } = useContext(CurrentTreeContext);
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     let [showDescriptionForm, setShowDescriptionForm] = useState(false)
     let [showNodeNameForm, setShowNodeNameForm] = useState(false)
     const showModal = () => {
@@ -497,27 +251,17 @@ const NodeCard = ({ node }) => {
     ];
     function handleRenameNode(query) {
         const newName = query[`nodeName ${node.nodeID}`]
-        let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        for (let rootNode of cloneTree) {
-            let result = recursiveModify(rootNode, node.nodeID, "nodeName", newName)
-            if (result == true) {
-                break
-            }
-        }
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveModify(cloneMap, node.nodeID, "nodeName", newName)
         setShowNodeNameForm(false)
-        setCurrentTree(cloneTree)
+        setCurrentMap(cloneMap)
     }
     function handleRewriteDescription(query) {
         const newDes = query[`nodeDescription ${node.nodeID}`];
-        let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        for (let rootNode of cloneTree) {
-            let result = recursiveModify(rootNode, node.nodeID, "nodeDescription", newDes)
-            if (result == true) {
-                break
-            }
-        }
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveModify(cloneMap, node.nodeID, "nodeDescription", newDes)
         setShowDescriptionForm(false)
-        setCurrentTree(cloneTree)
+        setCurrentMap(cloneMap)
     }
     function recursiveAddChild(currNode, idToModify) {
         if (currNode.nodeID == idToModify) {
@@ -551,35 +295,20 @@ const NodeCard = ({ node }) => {
         }
     }
     function addChild() {
-        let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        for (let rootNode of cloneTree) {
-            let result = recursiveAddChild(rootNode, node.nodeID)
-            if (result == true) {
-                break
-            }
-        }
-        setCurrentTree(cloneTree)
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveAddChild(cloneMap, node.nodeID)
+        setCurrentMap(cloneMap)
     }
     function handleDeleteNode() {
-        let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        for (let rootNode of cloneTree) {
-            let result = recursiveDeleteNode(rootNode, node.nodeID)
-            if (result == true) {
-                break
-            }
-        }
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveDeleteNode(cloneMap, node.nodeID)
         setIsModalOpen(false)
-        setCurrentTree(cloneTree)
+        setCurrentMap(cloneMap)
     }
     function handleReColorNode(e) {
-        let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        for (let rootNode of cloneTree) {
-            let result = recursiveModify(rootNode, node.nodeID, "nodeColor", `${e.key}`)
-            if (result == true) {
-                break
-            }
-        }
-        setCurrentTree(cloneTree)
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveModify(cloneMap, node.nodeID, "nodeColor", `${e.key}`)
+        setCurrentMap(cloneMap)
     }
     const onFinishFailed = errorInfo => {
         console.log('Failed:', errorInfo);
@@ -600,10 +329,8 @@ const NodeCard = ({ node }) => {
         e.preventDefault()
         let nodeToMoveID = e.dataTransfer.getData("currentNode")
         let currentNodeID = node.nodeID
-        if (nodeToMoveID !== currentNodeID && currentNodeID !== currentTree.nodeID) {
-            // let newTree = moveNodeBeforeSibling(currentTree, nodeToMoveID, currentNodeID)
-            // setCurrentTree(newTree)
-            handleMoveNode(nodeToMoveID, currentNodeID, currentTree, setCurrentTree)
+        if (nodeToMoveID !== currentNodeID && currentNodeID !== currentMap.nodeID) {
+            handleMoveNode(nodeToMoveID, currentNodeID, currentMap, setCurrentMap)
         }
 
     }
@@ -817,7 +544,7 @@ const FolderNode = ({ node, nodeType }) => {
 
 const SpiderNode = ({ node, nodeType }) => {
     let antdTheme = theme.useToken()
-    const { currentTree, setCurrentTree } = useContext(CurrentTreeContext);
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     let lineColor = antdTheme.token.colorTextTertiary
     return (
         <>
@@ -991,13 +718,14 @@ const ZoomPanWrapper = ({ children }) => {
     );
 };
 function App() {
-    const [currentTree, setCurrentTree] = useState(null);
+    const [currentMap, setCurrentMap] = useState(null);
     const [expandAll, setExpandAll] = useState(false);
     const [showAll, setShowAll] = useState(false);
-    const [treeLayout, setTreeLayout] = useState("spider")
+    const [mapLayout, setMapLayout] = useState("spider")
+    const [modalNew, setModalNew] = useState(false);
 
     let [modeTheme, setModeTheme] = useState("light")
-    console.log(currentTree)
+    console.log(currentMap)
     function recursiveAll(currNode, currAtt, contentToModify) {
         currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
         for (let child of currNode.children) {
@@ -1005,43 +733,47 @@ function App() {
         }
     }
     function handleExpandAll() {
-        let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        for (let rootNode of cloneTree) {
-            let result = recursiveAll(rootNode, "showChildren", !expandAll)
-            if (result == true) {
-                break
-            }
-        }
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveAll(cloneMap, "showChildren", !expandAll)
         setExpandAll(!expandAll)
-        setCurrentTree(cloneTree)
+        setCurrentMap(cloneMap)
     }
     function handleShowAll() {
-        let cloneTree = JSON.parse(JSON.stringify(currentTree))
-        for (let rootNode of cloneTree) {
-            let result = recursiveAll(rootNode, "showDescription", !showAll)
-            if (result == true) {
-                break
-            }
-        }
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveAll(cloneMap, "showDescription", !showAll)
         setShowAll(!showAll)
-        setCurrentTree(cloneTree)
+        setCurrentMap(cloneMap)
     }
-    function createNewTree() {
+    function createNewMap() {
         let newRoot = newNodeTemplate()
-        setCurrentTree([newRoot])
+        setCurrentMap([newRoot])
     }
+
     const downloadJson = () => {
-        const jsonString = JSON.stringify(currentTree, null, 4); // formatted JSON
+        const jsonString = JSON.stringify(currentMap, null, 4); // formatted JSON
         const blob = new Blob([jsonString], { type: "application/json" });
         const url = URL.createObjectURL(blob);
 
         const link = document.createElement("a");
         link.href = url;
-        link.download = "tree.json"; // filename
+        link.download = "map.json"; // filename
         link.click();
 
         URL.revokeObjectURL(url); // cleanup
     };
+    function downloadBackup() {
+        let backupMap = JSON.parse(localStorage.getItem("backupMap"))
+        const jsonString = JSON.stringify(backupMap, null, 4); // formatted JSON
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "backupMap.json"; // filename
+        link.click();
+
+        URL.revokeObjectURL(url); // cleanup
+    }
     useEffect(() => {
         let modeThemeStorage = localStorage.getItem("modeTheme")
         if (modeThemeStorage == "dark") {
@@ -1063,6 +795,11 @@ function App() {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
     }, []);
+    useEffect(() => {
+        if (currentMap != null) {
+            localStorage.setItem('backupMap', JSON.stringify(currentMap))
+        }
+    }, [currentMap])
     const uploadProps = {
         accept: ".json", // Only allow JSON files
         showUploadList: false, // Hide default file list
@@ -1077,7 +814,7 @@ function App() {
             reader.onload = (e) => {
                 try {
                     const json = JSON.parse(e.target.result);
-                    setCurrentTree(json)
+                    setCurrentMap(json)
                 } catch (err) {
 
                 }
@@ -1093,7 +830,7 @@ function App() {
             <ConfigProvider theme={{
                 algorithm: modeTheme == "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm
             }}>
-                <CurrentTreeContext.Provider value={{ currentTree, setCurrentTree }}>
+                <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
                     <Layout
                         style={{
                             height: "100%",
@@ -1108,7 +845,7 @@ function App() {
 
                                 <Flex gap={12} align='center'>
                                     <img width={"15%"} src={`${window.location.href}/logo_${modeTheme}.png`} />
-                                    {currentTree
+                                    {currentMap
                                         ? <>
                                             <Button onClick={handleExpandAll} type="default" shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
                                                 {expandAll ? "Collapse all" : "Expand all"}
@@ -1118,7 +855,10 @@ function App() {
                                             </Button>
                                         </>
                                         : <>
-                                            <Button onClick={createNewTree} type="primary" shape="default" icon={<PlusOutlined />}>
+                                            <Upload {...uploadProps}>
+                                                <Button type="primary" icon={<UploadOutlined />}>Upload</Button>
+                                            </Upload>
+                                            <Button onClick={() => { setModalNew(true) }} shape="default" icon={<PlusOutlined />}>
                                                 New map
                                             </Button>
                                         </>
@@ -1129,20 +869,20 @@ function App() {
                                         block={false}
                                         size={"large"}
                                         // shape="round"
-                                        onChange={(value) => setTreeLayout(value)}
+                                        onChange={(value) => setMapLayout(value)}
                                         options={[
                                             { value: 'spider', label: 'Spider layout', icon: <BugOutlined /> },
                                             { value: 'folder', label: 'Folder layout', icon: <FolderOpenOutlined /> },
                                         ]}
                                     />
-                                    {currentTree ?
+                                    {currentMap ?
                                         <Button onClick={downloadJson} type="primary" shape="default" icon={<DownloadOutlined />}>
                                             Download
                                         </Button>
                                         :
-                                        <Upload {...uploadProps}>
-                                            <Button icon={<UploadOutlined />}>Upload</Button>
-                                        </Upload>}
+                                        <Button onClick={downloadBackup} type="primary" shape="default" icon={<DownloadOutlined />}>
+                                            Download backup
+                                        </Button>}
                                     <Switch checked={modeTheme == "light"}
                                         unCheckedChildren={<MoonFilled />}
                                         checkedChildren={<SunFilled />}
@@ -1162,19 +902,28 @@ function App() {
                         <Divider style={{ margin: `0 12px` }} />
                         <div className='insideWrapper' style={{ flex: 1, width: "100%", overflow: "hidden" }}>
                             <ZoomPanWrapper>
-                                {currentTree?.length > 0 ? <>
+                                {currentMap ? <>
                                     {
-                                        treeLayout == "spider" ? currentTree.map((child, index) => <SpiderNode key={child.nodeID} node={child} nodeType={"root"} />) : <></>
+                                        mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} /> : <></>
                                     }
                                     {
-                                        treeLayout == "folder" ? currentTree.map((child, index) => <FolderNode key={child.nodeID} node={child} nodeType={"root"} />) : <></>
+                                        mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} /> : <></>
                                     }
                                 </> : <></>}
 
                             </ZoomPanWrapper>
                         </div>
+                        <Modal centered
+                            title="Do you want to create a new map?"
+                            closable={{ 'aria-label': 'Custom Close Button' }}
+                            open={modalNew}
+                            onOk={createNewMap}
+                            onCancel={() => { setModalNew(false) }}
+                        >
+                            <Typography.Text>If you create a new map, the current backup map will be deleted</Typography.Text>
+                        </Modal>
                     </Layout>
-                </CurrentTreeContext.Provider>
+                </CurrentMapContext.Provider>
             </ConfigProvider>
         </>
     );
