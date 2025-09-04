@@ -1,11 +1,6 @@
-import { createContext, useContext, useState, React, useEffect, useRef, useCallback } from 'react';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import {
-    EditOutlined,
-    EllipsisOutlined,
-    SettingOutlined,
     EyeOutlined,
-    SmileOutlined,
     EyeInvisibleOutlined,
     DownOutlined,
     RightOutlined,
@@ -19,7 +14,8 @@ import {
     FolderOpenOutlined,
     BugOutlined,
     DownloadOutlined,
-    UploadOutlined
+    UploadOutlined,
+    ReloadOutlined
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
@@ -28,11 +24,8 @@ import 'katex/dist/katex.min.css' // `rehype-katex` does not import the CSS for 
 import {
     Button,
     Flex,
-    Col,
-    Row,
     Card,
     Divider,
-    Collapse,
     Typography,
     Dropdown,
     Modal,
@@ -42,14 +35,15 @@ import {
     ConfigProvider,
     Switch,
     Segmented,
-    Upload
+    Upload,
+    Layout,
+    theme
 } from "antd";
-
-const { Header, Content, Footer } = Layout;
 
 
 
 const CurrentMapContext = createContext(null);
+const ModeThemeContext = createContext(null);
 
 let radiusAmount = 12
 let cardWidth = 200
@@ -108,11 +102,8 @@ function findAndPopNode(currNode, idToFind) {
 
 function findAndMoveNode(currNode, nodeToMove, idToFind) {
     const index = currNode.children.findIndex(obj => obj.nodeID === idToFind);
-    console.log("index in find", index)
-    console.log("currNode in find", currNode)
     if (index !== -1) {
         currNode.children.splice(index, 0, nodeToMove)
-        console.log("currNode found", currNode)
         return true
     }
     else {
@@ -164,12 +155,59 @@ const LeftLine = ({ node, nodeType }) => {
                 </div>
                 <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
                     caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                    borderTop: (nodeType == "top" || nodeType == "mid") ? `1px solid ${lineColor}` : "",
-                    borderLeft: nodeType == "top" ? `1px solid ${lineColor}` : "",
-                    borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
+                    borderTop: (nodeType == "topSpider" || nodeType == "mid" || nodeType == "topFolder") ? `1px solid ${lineColor}` : "",
+                    borderLeft: nodeType == "topSpider" ? `1px solid ${lineColor}` : "",
+                    borderRadius: nodeType == "topSpider" ? `${radiusAmount}px 0 0 0` : ""
                 }}>
                 </div>
             </Flex>
+        </>
+    )
+}
+
+const EdgeComp = ({ node }) => {
+    const [showEdgeForm, setShowEdgeForm] = useState(false)
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    function handleRenameEdge(query) {
+        const newName = query[`edgeName ${node.nodeID}`]
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveModify(cloneMap, node.nodeID, "edgeName", newName)
+        setShowEdgeForm(false)
+        setCurrentMap(cloneMap)
+    }
+    function handleEscapeEdgeNameForm(e) {
+        if (e.key === "Escape") {
+            setShowEdgeForm(false)
+        }
+    }
+    const onFinishFailed = errorInfo => {
+        console.log('Failed:', errorInfo);
+    };
+    return (
+        <>
+            {
+                showEdgeForm ? <Form
+                    name="basic"
+                    wrapperCol={{ span: 24 }}
+                    initialValues={{ [`edgeName ${node.nodeID}`]: node.edgeName, remember: true }}
+                    onFinish={handleRenameEdge}
+                    onFinishFailed={onFinishFailed}
+                    autoComplete="off"
+                    style={{ margin: 4 }}
+                >
+                    <Form.Item
+                        name={`edgeName ${node.nodeID}`}
+                        style={{ marginBottom: 0, width: "100%" }}
+                    >
+                        <Input autoFocus onKeyDown={handleEscapeEdgeNameForm} />
+                    </Form.Item>
+                </Form>
+                    :
+                    <div style={{ minHeight: marginValue, margin: `0 4px 4px 4px` }} onDoubleClick={() => { setShowEdgeForm(true) }}>
+                        <Typography.Text style={{ fontSize: 12 }}>{node.edgeName}</Typography.Text>
+
+                    </div>
+            }
         </>
     )
 }
@@ -183,7 +221,7 @@ const NodeCard = ({ node }) => {
     const showModal = () => {
         setIsModalOpen(true);
     };
-    const items = [
+    const contextMenuItems = [
         {
             key: '1',
             label: (
@@ -201,42 +239,27 @@ const NodeCard = ({ node }) => {
             children: [
                 {
                     key: 'Default',
-                    label: <>
-                        <div style={{ backgroundColor: antdTheme.token.colorFill, borderRadius: radiusAmount, height: 22, width: 48 }}></div>
-                        {/* <Typography.Text style={{ color: antdTheme.token.colorErrorTextHover }}>Red</Typography.Text> */}
-                    </>,
+                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorFill, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
                     onClick: handleReColorNode
                 },
                 {
                     key: 'Error',
-                    label: <>
-                        <div style={{ backgroundColor: antdTheme.token.colorErrorHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>
-                        {/* <Typography.Text style={{ color: antdTheme.token.colorErrorTextHover }}>Red</Typography.Text> */}
-                    </>,
+                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorErrorHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
                     onClick: handleReColorNode
                 },
                 {
                     key: 'Info',
-                    label: <>
-                        <div style={{ backgroundColor: antdTheme.token.colorInfoHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>
-                        {/* <Typography.Text style={{ color: antdTheme.token.colorInfoTextHover }}>Blue</Typography.Text> */}
-                    </>,
+                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorInfoHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
                     onClick: handleReColorNode
                 },
                 {
                     key: 'Success',
-                    label: <>
-                        <div style={{ backgroundColor: antdTheme.token.colorSuccessHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>
-                        {/* <Typography.Text style={{ color: antdTheme.token.colorSuccessTextHover }}>Green</Typography.Text> */}
-                    </>,
+                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorSuccessHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
                     onClick: handleReColorNode
                 },
                 {
                     key: 'Warning',
-                    label: <>
-                        <div style={{ backgroundColor: antdTheme.token.colorWarningHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>
-                        {/* <Typography.Text style={{ color: antdTheme.token.colorWarningTextHover }}>Yellow</Typography.Text> */}
-                    </>,
+                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorWarningHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
                     onClick: handleReColorNode
                 },
             ],
@@ -336,7 +359,7 @@ const NodeCard = ({ node }) => {
     }
     return (
         <>
-            <Dropdown menu={{ items }} trigger={'contextMenu'}>
+            <Dropdown menu={{ items: contextMenuItems }} trigger={'contextMenu'}>
                 <div draggable={!node.showDescription}
                     onDragStart={handleDragStart}
                     onDragOver={preventDragDefault}
@@ -367,15 +390,6 @@ const NodeCard = ({ node }) => {
                         }}
 
                     >
-                        {/* <Typography.Text editable={{
-                    icon: <></>,
-                    onChange: (txt) => { handleRenameNode(txt) },
-                    triggerType: "text",
-                    enterIcon: <></>
-                }}
-                    style={{ margin: "auto", marginLeft: 12, width: "100%" }}
-
-                >{node.nodeName}</Typography.Text> */}
                         {
                             showNodeNameForm ? <Form
                                 name="basic"
@@ -487,22 +501,26 @@ const NodeCard = ({ node }) => {
 const FolderNode = ({ node, nodeType }) => {
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
-    // let erasedAmount = 50 - 12
-
-
-
     return (
         <>
 
             <>
-                <Flex vertical={true} style={{ marginTop: nodeType == "bot" ? 0 : marginValue }}>
+                <Flex vertical={true} style={{ marginTop: nodeType == "mid" ? marginValue : 0 }}>
                     <Flex>
                         <LeftLine node={node} nodeType={nodeType} />
-                        <NodeCard node={node} />
+                        <div style={{ marginTop: nodeType == "bot" ? marginValue : 0 }}>
+                            <NodeCard node={node} />
+                        </div>
                     </Flex>
                     {
                         node?.children?.length > 0 && node?.showChildren ?
                             <>
+                                <Flex>
+                                    <div style={{ caretColor: "transparent", minHeight: marginValue, width: cardWidth }} />
+                                    <div style={{ caretColor: "transparent", minHeight: marginValue, minWidth: cardWidth / 2, borderLeft: `1px solid ${lineColor}` }}>
+                                        <EdgeComp node={node} />
+                                    </div>
+                                </Flex>
                                 <Flex>
                                     <div style={{ caretColor: "transparent", minWidth: cardWidth, minHeight: "100%" }}></div>
                                     <div style={{ caretColor: "transparent", borderLeft: `1px solid ${lineColor}`, minHeight: "100%" }}></div>
@@ -510,24 +528,16 @@ const FolderNode = ({ node, nodeType }) => {
                                         {node.children.map((child, index) => {
                                             if (index < node.children.length - 1) {
                                                 return (
-                                                    <FolderNode key={child.nodeID} node={child} nodeType={"mid"} />
+                                                    <FolderNode key={child.nodeID} node={child} nodeType={index == 0 ? "topFolder" : "mid"} />
                                                 )
                                             }
-                                            // else {
-                                            //     return <></>
-                                            // }
                                         }
                                         )}
                                     </Flex>
                                 </Flex>
                                 <Flex vertical>
                                     <Flex>
-                                        <div style={{ caretColor: "transparent", minWidth: cardWidth, minHeight: marginValue }}></div>
-                                        <div style={{ caretColor: "transparent", borderLeft: `1px solid ${lineColor}`, minHeight: marginValue }}></div>
-
-                                    </Flex>
-                                    <Flex>
-                                        <div style={{ caretColor: "transparent", minWidth: cardWidth, borderRadius: radiusAmount }} />
+                                        <div style={{ caretColor: "transparent", minWidth: cardWidth }} />
 
                                         <FolderNode node={node.children[node.children.length - 1]} nodeType={"bot"} />
                                     </Flex>
@@ -558,11 +568,11 @@ const SpiderNode = ({ node, nodeType }) => {
                 {node.children.length > 0 && node.showChildren ?
                     <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
                         <div style={{
-                            caretColor: "transparent", flex: 1, minWidth: cardWidth / 2
+                            caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, display: "flex", alignItems: "flex-end"
                         }}>
-
+                            <EdgeComp node={node} />
                         </div>
-                        <div style={{ flex: 1, minWidth: cardWidth / 2, borderTop: `1px solid ${lineColor}` }}>
+                        <div style={{ caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, borderTop: `1px solid ${lineColor}` }}>
                         </div>
                     </Flex>
                     : <></>}
@@ -572,11 +582,11 @@ const SpiderNode = ({ node, nodeType }) => {
                             <Flex vertical justify='center'>
                                 {/* top child */}
                                 {node.children.length > 1 ?
-                                    <SpiderNode node={node.children[0]} nodeType={"top"} />
+                                    <SpiderNode node={node.children[0]} nodeType={"topSpider"} />
                                     : <></>}
                                 {/* mid child */}
                                 <Flex>
-                                    {node.children.length > 1 ? <div style={{ minHeight: "100%", borderLeft: `1px solid ${lineColor}` }} /> : <></>}
+                                    {node.children.length > 1 ? <div style={{ caretColor: "transparent", minHeight: "100%", borderLeft: `1px solid ${lineColor}` }} /> : <></>}
                                     <Flex vertical>
                                         {
                                             node.children.map((child, index) => {
@@ -585,9 +595,6 @@ const SpiderNode = ({ node, nodeType }) => {
                                                         <SpiderNode key={child.nodeID} node={child} nodeType={"mid"} />
                                                     )
                                                 }
-                                                // else {
-                                                //     return <></>
-                                                // }
                                             }
                                             )
                                         }
@@ -704,7 +711,6 @@ const ZoomPanWrapper = ({ children }) => {
         >
             {/* Content container */}
             <div
-                className="origin-top-left"
                 style={{
                     transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                     transformOrigin: '0 0',
@@ -717,15 +723,19 @@ const ZoomPanWrapper = ({ children }) => {
         </div>
     );
 };
-function App() {
-    const [currentMap, setCurrentMap] = useState(null);
+
+const MindMap = () => {
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
+
     const [expandAll, setExpandAll] = useState(false);
     const [showAll, setShowAll] = useState(false);
     const [mapLayout, setMapLayout] = useState("spider")
     const [modalNew, setModalNew] = useState(false);
 
-    let [modeTheme, setModeTheme] = useState("light")
-    console.log(currentMap)
+    let antdTheme = theme.useToken()
+    let lineColor = antdTheme.token.colorTextTertiary
+    let layoutMargin = 18
     function recursiveAll(currNode, currAtt, contentToModify) {
         currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
         for (let child of currNode.children) {
@@ -761,45 +771,10 @@ function App() {
 
         URL.revokeObjectURL(url); // cleanup
     };
-    function downloadBackup() {
+    function loadBackup() {
         let backupMap = JSON.parse(localStorage.getItem("backupMap"))
-        const jsonString = JSON.stringify(backupMap, null, 4); // formatted JSON
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "backupMap.json"; // filename
-        link.click();
-
-        URL.revokeObjectURL(url); // cleanup
+        setCurrentMap(backupMap)
     }
-    useEffect(() => {
-        let modeThemeStorage = localStorage.getItem("modeTheme")
-        if (modeThemeStorage == "dark") {
-            localStorage.setItem("modeTheme", "dark")
-            setModeTheme("dark")
-        }
-        else {
-            localStorage.setItem("modeTheme", "light")
-            setModeTheme("light")
-        }
-        const handleBeforeUnload = (event) => {
-            event.preventDefault();
-            event.returnValue = "";
-        };
-
-        window.addEventListener("beforeunload", handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-        };
-    }, []);
-    useEffect(() => {
-        if (currentMap != null) {
-            localStorage.setItem('backupMap', JSON.stringify(currentMap))
-        }
-    }, [currentMap])
     const uploadProps = {
         accept: ".json", // Only allow JSON files
         showUploadList: false, // Hide default file list
@@ -827,44 +802,50 @@ function App() {
     };
     return (
         <>
-            <ConfigProvider theme={{
-                algorithm: modeTheme == "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm
-            }}>
-                <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
-                    <Layout
-                        style={{
-                            height: "100%",
-                            padding: 0,
-                            scrollbarColor: "red",
-                            display: "flex",
-                            flexDirection: "column"
-                        }}
-                    >
-                        <div className='layoutMenu' style={{ padding: 12 }}>
-                            <Flex align='center' justify='space-between'>
+            <Layout
+                style={{
+                    height: "100%",
+                    padding: 0,
+                    scrollbarColor: "red",
+                    display: "flex",
+                    flexDirection: "column"
+                }}
+            >
+                <div className='layoutMenu' style={{
+                    margin: `0 ${layoutMargin}px`,
+                    height: 60,
+                    borderBottom: `1px solid ${lineColor}`
+                }}>
+                    <Flex align='center' justify='space-between' style={{ height: "100%" }}>
 
-                                <Flex gap={12} align='center'>
-                                    <img width={"15%"} src={`${window.location.href}/logo_${modeTheme}.png`} />
-                                    {currentMap
-                                        ? <>
-                                            <Button onClick={handleExpandAll} type="default" shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
-                                                {expandAll ? "Collapse all" : "Expand all"}
-                                            </Button>
-                                            <Button onClick={handleShowAll} type="default" shape="default" icon={showAll ? <EyeOutlined /> : <EyeInvisibleOutlined />}>
-                                                {showAll ? "Hide all" : "Show all"}
-                                            </Button>
-                                        </>
-                                        : <>
-                                            <Upload {...uploadProps}>
-                                                <Button type="primary" icon={<UploadOutlined />}>Upload</Button>
-                                            </Upload>
-                                            <Button onClick={() => { setModalNew(true) }} shape="default" icon={<PlusOutlined />}>
-                                                New map
-                                            </Button>
-                                        </>
-                                    }
-                                </Flex>
-                                <Flex gap={'small'} align='center'>
+                        <Flex align='center' style={{ height: "100%" }}>
+                            <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} />
+                            <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
+                            <Flex align='center' gap={12}>
+                                {currentMap
+                                    ? <>
+                                        <Button onClick={handleExpandAll} variant="filled" color='default' shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
+                                            {expandAll ? "Collapse all" : "Expand all"}
+                                        </Button>
+                                        <Button onClick={handleShowAll} variant="filled" color='default' shape="default" icon={showAll ? <EyeInvisibleOutlined /> : <EyeOutlined />}>
+                                            {showAll ? "Hide all" : "Show all"}
+                                        </Button>
+                                    </>
+                                    : <>
+                                        <Upload {...uploadProps}>
+                                            <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
+                                        </Upload>
+                                        <Button onClick={() => { setModalNew(true) }} variant="filled" color="default" icon={<PlusOutlined />}>
+                                            New map
+                                        </Button>
+                                    </>
+                                }
+                            </Flex>
+                        </Flex>
+                        <Flex gap={'small'} align='center'>
+
+                            {currentMap ?
+                                <>
                                     <Segmented
                                         block={false}
                                         size={"large"}
@@ -875,55 +856,97 @@ function App() {
                                             { value: 'folder', label: 'Folder layout', icon: <FolderOpenOutlined /> },
                                         ]}
                                     />
-                                    {currentMap ?
-                                        <Button onClick={downloadJson} type="primary" shape="default" icon={<DownloadOutlined />}>
-                                            Download
-                                        </Button>
-                                        :
-                                        <Button onClick={downloadBackup} type="primary" shape="default" icon={<DownloadOutlined />}>
-                                            Download backup
-                                        </Button>}
-                                    <Switch checked={modeTheme == "light"}
-                                        unCheckedChildren={<MoonFilled />}
-                                        checkedChildren={<SunFilled />}
-                                        onClick={(checked, event) => {
-                                            if (checked) {
-                                                localStorage.setItem("modeTheme", "light")
-                                                setModeTheme("light")
-                                            }
-                                            else {
-                                                localStorage.setItem("modeTheme", "dark")
-                                                setModeTheme("dark")
-                                            }
-                                        }} />
-                                </Flex>
-                            </Flex>
-                        </div>
-                        <Divider style={{ margin: `0 12px` }} />
-                        <div className='insideWrapper' style={{ flex: 1, width: "100%", overflow: "hidden" }}>
-                            <ZoomPanWrapper>
-                                {currentMap ? <>
-                                    {
-                                        mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} /> : <></>
+                                    <Button color='default' variant='solid' onClick={downloadJson} shape="round" icon={<DownloadOutlined />}>
+                                        Download
+                                    </Button>
+                                </>
+                                :
+                                <Button onClick={loadBackup} variant='solid' color='default' shape="round" icon={<ReloadOutlined />}>
+                                    Load backup
+                                </Button>}
+                            <Switch
+                                checked={modeTheme == "light"}
+                                unCheckedChildren={<MoonFilled />}
+                                checkedChildren={<SunFilled />}
+                                onClick={(checked, event) => {
+                                    if (checked) {
+                                        localStorage.setItem("modeTheme", "light")
+                                        setModeTheme("light")
                                     }
-                                    {
-                                        mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} /> : <></>
+                                    else {
+                                        localStorage.setItem("modeTheme", "dark")
+                                        setModeTheme("dark")
                                     }
-                                </> : <></>}
+                                }} />
+                        </Flex>
+                    </Flex>
+                </div>
+                <div className='insideWrapper' style={{ flex: 1, width: "100%", overflow: "hidden" }}>
+                    <ZoomPanWrapper>
+                        {currentMap ? <>
+                            {
+                                mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} /> : <></>
+                            }
+                            {
+                                mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} /> : <></>
+                            }
+                        </> : <></>}
 
-                            </ZoomPanWrapper>
-                        </div>
-                        <Modal centered
-                            title="Do you want to create a new map?"
-                            closable={{ 'aria-label': 'Custom Close Button' }}
-                            open={modalNew}
-                            onOk={createNewMap}
-                            onCancel={() => { setModalNew(false) }}
-                        >
-                            <Typography.Text>If you create a new map, the current backup map will be deleted</Typography.Text>
-                        </Modal>
-                    </Layout>
-                </CurrentMapContext.Provider>
+                    </ZoomPanWrapper>
+                </div>
+                <Modal centered
+                    title="Do you want to create a new map?"
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    open={modalNew}
+                    onOk={createNewMap}
+                    onCancel={() => { setModalNew(false) }}
+                >
+                    <Typography.Text>If you create a new map, the current backup map will be deleted</Typography.Text>
+                </Modal>
+            </Layout>
+        </>
+    );
+}
+
+function App() {
+    const [currentMap, setCurrentMap] = useState(null);
+    let [modeTheme, setModeTheme] = useState("light")
+    useEffect(() => {
+        let modeThemeStorage = localStorage.getItem("modeTheme")
+        if (modeThemeStorage == "dark") {
+            localStorage.setItem("modeTheme", "dark")
+            setModeTheme("dark")
+        }
+        else {
+            localStorage.setItem("modeTheme", "light")
+            setModeTheme("light")
+        }
+        const handleBeforeUnload = (event) => {
+            event.preventDefault();
+            event.returnValue = "";
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, []);
+    useEffect(() => {
+        if (currentMap != null) {
+            localStorage.setItem('backupMap', JSON.stringify(currentMap))
+        }
+    }, [currentMap])
+    return (
+        <>
+            <ConfigProvider theme={{
+                algorithm: modeTheme == "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm
+            }}>
+                <ModeThemeContext.Provider value={{ modeTheme, setModeTheme }}>
+                    <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
+                        <MindMap />
+                    </CurrentMapContext.Provider>
+                </ModeThemeContext.Provider>
             </ConfigProvider>
         </>
     );
