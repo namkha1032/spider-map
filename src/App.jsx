@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, React, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, React, useEffect, useRef, useCallback } from 'react';
 import { Breadcrumb, Layout, Menu, theme, Tree } from 'antd';
 import {
     EditOutlined,
@@ -15,7 +15,11 @@ import {
     CloseOutlined,
     BgColorsOutlined,
     MoonFilled,
-    SunFilled
+    SunFilled,
+    FolderOpenOutlined,
+    BugOutlined,
+    DownloadOutlined,
+    UploadOutlined
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
@@ -36,7 +40,9 @@ import {
     Input,
     Space,
     ConfigProvider,
-    Switch
+    Switch,
+    Segmented,
+    Upload
 } from "antd";
 
 const { Header, Content, Footer } = Layout;
@@ -314,6 +320,79 @@ function toggleShowChildren(node, currentTree, setCurrentTree) {
     setCurrentTree(cloneTree)
 }
 
+function findAndPopNode(currNode, idToFind) {
+    const index = currNode.children.findIndex(obj => obj.nodeID === idToFind);
+    if (index !== -1) {
+        return currNode.children.splice(index, 1)[0]; // removes and returns the object
+    }
+    else {
+        for (let childNode of currNode.children) {
+            let result = findAndPopNode(childNode, idToFind)
+            if (result != null) {
+                return result
+            }
+        }
+    }
+}
+
+function findAndMoveNode(currNode, nodeToMove, idToFind) {
+    const index = currNode.children.findIndex(obj => obj.nodeID === idToFind);
+    console.log("index in find", index)
+    console.log("currNode in find", currNode)
+    if (index !== -1) {
+        currNode.children.splice(index, 0, nodeToMove)
+        console.log("currNode found", currNode)
+        return true
+    }
+    else {
+        for (let childNode of currNode.children) {
+            let result = findAndMoveNode(childNode, nodeToMove, idToFind)
+            if (result != null) {
+                return result
+            }
+        }
+    }
+}
+
+function handleMoveNode(id1, id2, currentTree, setCurrentTree) {
+    let cloneTree = JSON.parse(JSON.stringify(currentTree))
+    let nodeToMove = null
+    for (let rootNode of cloneTree) {
+        nodeToMove = findAndPopNode(rootNode, id1)
+        if (nodeToMove != null) {
+            break
+        }
+    }
+    console.log("nodeToMove", nodeToMove)
+    const index = cloneTree.findIndex(obj => obj.nodeID === id2);
+    console.log("temp index", index)
+    if (index !== -1) {
+        cloneTree.splice(index, 0, nodeToMove)
+    }
+    else {
+        for (let childNode of cloneTree) {
+            let result = findAndMoveNode(childNode, nodeToMove, id2)
+            if (result == true) {
+                break
+            }
+        }
+    }
+    setCurrentTree(cloneTree)
+}
+function newNodeTemplate() {
+    return {
+        "nodeID": generateRandomString(10),
+        "nodeName": "New Node",
+        "nodeDescription": "",
+        "edgeName": "",
+        "nodeColor": "Default",
+        "showDescription": false,
+        "showChildren": true,
+        "children": []
+    }
+}
+
+
 const LeftLine = ({ node, nodeType }) => {
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
@@ -442,16 +521,7 @@ const NodeCard = ({ node }) => {
     }
     function recursiveAddChild(currNode, idToModify) {
         if (currNode.nodeID == idToModify) {
-            let newNode = {
-                "nodeID": generateRandomString(10),
-                "nodeName": "New Node",
-                "nodeDescription": "",
-                "edgeName": "",
-                "nodeColor": "Default",
-                "showDescription": false,
-                "showChildren": true,
-                "children": []
-            }
+            let newNode = newNodeTemplate()
             currNode.children.push(newNode)
             currNode.showChildren = true
             return true
@@ -531,8 +601,9 @@ const NodeCard = ({ node }) => {
         let nodeToMoveID = e.dataTransfer.getData("currentNode")
         let currentNodeID = node.nodeID
         if (nodeToMoveID !== currentNodeID && currentNodeID !== currentTree.nodeID) {
-            let newTree = moveNodeBeforeSibling(currentTree, nodeToMoveID, currentNodeID)
-            setCurrentTree(newTree)
+            // let newTree = moveNodeBeforeSibling(currentTree, nodeToMoveID, currentNodeID)
+            // setCurrentTree(newTree)
+            handleMoveNode(nodeToMoveID, currentNodeID, currentTree, setCurrentTree)
         }
 
     }
@@ -555,8 +626,10 @@ const NodeCard = ({ node }) => {
                             width: node.showDescription ? 400 : cardWidth,
                             maxHeight: 400,
                             height: "auto",
+                            // height: node.showDescription ? 400 : 48,
                             backgroundColor: node.nodeColor == "Default" ? antdTheme.token.colorFillQuaternary : antdTheme.token[`color${node.nodeColor}BgHover`],
                             // color: node.nodeColor == "Default" ? antdTheme.token.colorText : antdTheme.token[`color${node.nodeColor}TextActive`],
+                            // transition: "width 0.3s, height 0.3s",
                             color: antdTheme.token.colorText
                         }}
                         styles={{
@@ -602,7 +675,15 @@ const NodeCard = ({ node }) => {
                                 </Space.Compact>
                             </Form>
                                 :
-                                <Typography.Text style={{ color: "inherit" }} onClick={() => { setShowNodeNameForm(true) }}>{node.nodeName}</Typography.Text>
+                                <Typography.Text style={{ color: "inherit" }}
+                                    // onClick={(e) => {
+                                    //     if (e.shiftKey) {
+                                    //         setShowNodeNameForm(true)
+                                    //     }
+                                    // }}
+
+                                    onDoubleClick={() => { setShowNodeNameForm(true) }}
+                                >{node.nodeName}</Typography.Text>
                         }
                         {
                             node.showDescription ?
@@ -637,7 +718,14 @@ const NodeCard = ({ node }) => {
                                                 </Flex>
                                             </Form.Item>
                                         </Form>
-                                        : <div id='outerMarkdown' onClick={() => { setShowDescriptionForm(!showDescriptionForm) }} style={{ overflowY: "auto", flex: 1, minHeight: 22 }}>
+                                        : <div id='outerMarkdown'
+                                            // onClick={(e) => {
+                                            //     if (e.shiftKey) {
+                                            //         setShowDescriptionForm(!showDescriptionForm)
+                                            //     }
+                                            // }}
+                                            onDoubleClick={() => { setShowDescriptionForm(true) }}
+                                            style={{ overflowY: "auto", flex: 1, minHeight: 22 }}>
                                             <style>
                                                 {`
                                         #outerMarkdown p {
@@ -689,8 +777,8 @@ const FolderNode = ({ node, nodeType }) => {
                         node?.children?.length > 0 && node?.showChildren ?
                             <>
                                 <Flex>
-                                    {/* <div style={{ caretColor: "transparent", minWidth: cardWidth / 2, borderRadius: radiusAmount }} /> */}
-                                    <div style={{ caretColor: "transparent", borderRight: `1px solid ${lineColor}`, minWidth: cardWidth, minHeight: "100%" }}></div>
+                                    <div style={{ caretColor: "transparent", minWidth: cardWidth, minHeight: "100%" }}></div>
+                                    <div style={{ caretColor: "transparent", borderLeft: `1px solid ${lineColor}`, minHeight: "100%" }}></div>
                                     <Flex vertical={true}>
                                         {node.children.map((child, index) => {
                                             if (index < node.children.length - 1) {
@@ -707,13 +795,12 @@ const FolderNode = ({ node, nodeType }) => {
                                 </Flex>
                                 <Flex vertical>
                                     <Flex>
-                                        <div style={{ caretColor: "transparent", minWidth: cardWidth / 2, borderRadius: radiusAmount }} />
-                                        <div style={{ caretColor: "transparent", borderRight: `1px solid ${lineColor}`, minWidth: cardWidth / 2, minHeight: marginValue }}></div>
+                                        <div style={{ caretColor: "transparent", minWidth: cardWidth, minHeight: marginValue }}></div>
+                                        <div style={{ caretColor: "transparent", borderLeft: `1px solid ${lineColor}`, minHeight: marginValue }}></div>
 
                                     </Flex>
                                     <Flex>
                                         <div style={{ caretColor: "transparent", minWidth: cardWidth, borderRadius: radiusAmount }} />
-                                        {/* <div style={{ borderRight: `1px solid ${lineColor}`, width: cardWidth / 2, minHeight: "100%" }}></div> */}
 
                                         <FolderNode node={node.children[node.children.length - 1]} nodeType={"bot"} />
                                     </Flex>
@@ -744,11 +831,11 @@ const SpiderNode = ({ node, nodeType }) => {
                 {node.children.length > 0 && node.showChildren ?
                     <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
                         <div style={{
-                            caretColor: "transparent", minHeight: "50%", minWidth: cardWidth / 2
+                            caretColor: "transparent", flex: 1, minWidth: cardWidth / 2
                         }}>
 
                         </div>
-                        <div style={{ minHeight: "50%", minWidth: cardWidth / 2, borderTop: `1px solid ${lineColor}` }}>
+                        <div style={{ flex: 1, minWidth: cardWidth / 2, borderTop: `1px solid ${lineColor}` }}>
                         </div>
                     </Flex>
                     : <></>}
@@ -762,7 +849,7 @@ const SpiderNode = ({ node, nodeType }) => {
                                     : <></>}
                                 {/* mid child */}
                                 <Flex>
-                                    {node.children.length > 1 ? <div style={{ minHeight: "100%", borderRight: `1px solid ${lineColor}` }} /> : <></>}
+                                    {node.children.length > 1 ? <div style={{ minHeight: "100%", borderLeft: `1px solid ${lineColor}` }} /> : <></>}
                                     <Flex vertical>
                                         {
                                             node.children.map((child, index) => {
@@ -791,10 +878,124 @@ const SpiderNode = ({ node, nodeType }) => {
     )
 }
 
+const ZoomPanWrapper = ({ children }) => {
+    const [zoom, setZoom] = useState(1);
+    const [pan, setPan] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const containerRef = useRef(null);
+
+    const handleWheel = useCallback((e) => {
+        if (e.ctrlKey) {
+            e.preventDefault();
+
+            const rect = containerRef.current.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Calculate the point in the content space before zoom
+            const beforeZoomX = (mouseX - pan.x) / zoom;
+            const beforeZoomY = (mouseY - pan.y) / zoom;
+
+            // Update zoom
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newZoom = Math.min(Math.max(zoom * delta, 0.1), 10);
+
+            // Calculate new pan to keep the mouse point fixed
+            const newPanX = mouseX - beforeZoomX * newZoom;
+            const newPanY = mouseY - beforeZoomY * newZoom;
+
+            setZoom(newZoom);
+            setPan({ x: newPanX, y: newPanY });
+        }
+    }, [zoom, pan]);
+
+    const handleMouseDown = useCallback((e) => {
+        if (e.ctrlKey) {
+            e.preventDefault();
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - pan.x,
+                y: e.clientY - pan.y
+            });
+        }
+    }, [pan]);
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging && e.ctrlKey) {
+            e.preventDefault();
+            setPan({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = useCallback((e) => {
+        setIsDragging(false);
+    }, []);
+
+    const handleKeyDown = useCallback((e) => {
+        if (e.ctrlKey && e.key === '0') {
+            e.preventDefault();
+            setZoom(1);
+            setPan({ x: 0, y: 0 });
+        }
+    }, []);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (container) {
+            container.addEventListener('wheel', handleWheel, { passive: false });
+            return () => {
+                container.removeEventListener('wheel', handleWheel);
+            };
+        }
+    }, [handleWheel]);
+
+    useEffect(() => {
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [handleMouseMove, handleMouseUp, handleKeyDown]);
+
+    return (
+        <div
+            ref={containerRef}
+            className="fixed inset-0 overflow-hidden bg-gray-100 cursor-grab"
+            style={{
+                cursor: isDragging ? 'grabbing' : (zoom > 1 ? 'grab' : 'default'),
+                width: "100%", height: "100%"
+            }}
+            onMouseDown={handleMouseDown}
+        >
+            {/* Content container */}
+            <div
+                className="origin-top-left"
+                style={{
+                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                    transformOrigin: '0 0',
+                    width: '100%',
+                    height: '100%'
+                }}
+            >
+                {children}
+            </div>
+        </div>
+    );
+};
 function App() {
-    const [currentTree, setCurrentTree] = useState(tree2);
+    const [currentTree, setCurrentTree] = useState(null);
     const [expandAll, setExpandAll] = useState(false);
     const [showAll, setShowAll] = useState(false);
+    const [treeLayout, setTreeLayout] = useState("spider")
+
     let [modeTheme, setModeTheme] = useState("light")
     console.log(currentTree)
     function recursiveAll(currNode, currAtt, contentToModify) {
@@ -825,6 +1026,22 @@ function App() {
         setShowAll(!showAll)
         setCurrentTree(cloneTree)
     }
+    function createNewTree() {
+        let newRoot = newNodeTemplate()
+        setCurrentTree([newRoot])
+    }
+    const downloadJson = () => {
+        const jsonString = JSON.stringify(currentTree, null, 4); // formatted JSON
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "tree.json"; // filename
+        link.click();
+
+        URL.revokeObjectURL(url); // cleanup
+    };
     useEffect(() => {
         let modeThemeStorage = localStorage.getItem("modeTheme")
         if (modeThemeStorage == "dark") {
@@ -846,6 +1063,31 @@ function App() {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
     }, []);
+    const uploadProps = {
+        accept: ".json", // Only allow JSON files
+        showUploadList: false, // Hide default file list
+        beforeUpload: (file) => {
+            // Validate file type
+            const isJson = file.type === "application/json" || file.name.endsWith(".json");
+            if (!isJson) {
+                return Upload.LIST_IGNORE;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    setCurrentTree(json)
+                } catch (err) {
+
+                }
+            };
+            reader.readAsText(file);
+
+            // Prevent automatic upload
+            return false;
+        },
+    };
     return (
         <>
             <ConfigProvider theme={{
@@ -855,41 +1097,82 @@ function App() {
                     <Layout
                         style={{
                             height: "100%",
-                            overflowY: "scroll", padding: 16,
-                            scrollbarColor: "red"
+                            padding: 0,
+                            scrollbarColor: "red",
+                            display: "flex",
+                            flexDirection: "column"
                         }}
                     >
-                        <Flex style={{ marginBottom: 40, paddingLeft: 100 }} gap={"small"}>
-                            <Button onClick={handleExpandAll} type="default" shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
-                                {expandAll ? "Collapse all" : "Expand all"}
-                            </Button>
-                            <Button onClick={handleShowAll} type="default" shape="default" icon={showAll ? <EyeOutlined /> : <EyeInvisibleOutlined />}>
-                                {showAll ? "Hide all" : "Show all"}
-                            </Button>
-                            <Switch checked={modeTheme == "light"}
-                                unCheckedChildren={<MoonFilled />}
-                                checkedChildren={<SunFilled />}
-                                onClick={(checked, event) => {
-                                    if (checked) {
-                                        localStorage.setItem("modeTheme", "light")
-                                        setModeTheme("light")
-                                    }
-                                    else {
-                                        localStorage.setItem("modeTheme", "dark")
-                                        setModeTheme("dark")
-                                    }
-                                }} />
-                        </Flex>
+                        <div className='layoutMenu' style={{ padding: 12 }}>
+                            <Flex align='center' justify='space-between'>
 
-                        {currentTree?.length > 0 ? <>
-                            {
-                                currentTree.map((child, index) => <SpiderNode key={child.nodeID} node={child} nodeType={"root"} />)
-                            }
-                            {
-                                currentTree.map((child, index) => <FolderNode key={child.nodeID} node={child} nodeType={"root"} />)
-                            }
-                        </> : <></>}
+                                <Flex gap={12} align='center'>
+                                    <img width={"15%"} src={`${window.location.href}/logo_${modeTheme}.png`} />
+                                    {currentTree
+                                        ? <>
+                                            <Button onClick={handleExpandAll} type="default" shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
+                                                {expandAll ? "Collapse all" : "Expand all"}
+                                            </Button>
+                                            <Button onClick={handleShowAll} type="default" shape="default" icon={showAll ? <EyeOutlined /> : <EyeInvisibleOutlined />}>
+                                                {showAll ? "Hide all" : "Show all"}
+                                            </Button>
+                                        </>
+                                        : <>
+                                            <Button onClick={createNewTree} type="primary" shape="default" icon={<PlusOutlined />}>
+                                                New map
+                                            </Button>
+                                        </>
+                                    }
+                                </Flex>
+                                <Flex gap={'small'} align='center'>
+                                    <Segmented
+                                        block={false}
+                                        size={"large"}
+                                        // shape="round"
+                                        onChange={(value) => setTreeLayout(value)}
+                                        options={[
+                                            { value: 'spider', label: 'Spider layout', icon: <BugOutlined /> },
+                                            { value: 'folder', label: 'Folder layout', icon: <FolderOpenOutlined /> },
+                                        ]}
+                                    />
+                                    {currentTree ?
+                                        <Button onClick={downloadJson} type="primary" shape="default" icon={<DownloadOutlined />}>
+                                            Download
+                                        </Button>
+                                        :
+                                        <Upload {...uploadProps}>
+                                            <Button icon={<UploadOutlined />}>Upload</Button>
+                                        </Upload>}
+                                    <Switch checked={modeTheme == "light"}
+                                        unCheckedChildren={<MoonFilled />}
+                                        checkedChildren={<SunFilled />}
+                                        onClick={(checked, event) => {
+                                            if (checked) {
+                                                localStorage.setItem("modeTheme", "light")
+                                                setModeTheme("light")
+                                            }
+                                            else {
+                                                localStorage.setItem("modeTheme", "dark")
+                                                setModeTheme("dark")
+                                            }
+                                        }} />
+                                </Flex>
+                            </Flex>
+                        </div>
+                        <Divider style={{ margin: `0 12px` }} />
+                        <div className='insideWrapper' style={{ flex: 1, width: "100%", overflow: "hidden" }}>
+                            <ZoomPanWrapper>
+                                {currentTree?.length > 0 ? <>
+                                    {
+                                        treeLayout == "spider" ? currentTree.map((child, index) => <SpiderNode key={child.nodeID} node={child} nodeType={"root"} />) : <></>
+                                    }
+                                    {
+                                        treeLayout == "folder" ? currentTree.map((child, index) => <FolderNode key={child.nodeID} node={child} nodeType={"root"} />) : <></>
+                                    }
+                                </> : <></>}
 
+                            </ZoomPanWrapper>
+                        </div>
                     </Layout>
                 </CurrentTreeContext.Provider>
             </ConfigProvider>
