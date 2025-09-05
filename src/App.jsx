@@ -370,6 +370,11 @@ const NodeCard = ({ node }) => {
                     onDrop={handleDrop}>
                     <Card
                         size={"small"}
+                        onClick={(e) => {
+                            if (e.shiftKey) {
+                                addChild()
+                            }
+                        }}
                         style={{
                             cursor: "pointer",
                             borderColor: node.nodeColor == "Default" ? antdTheme.token.colorTextSecondary : antdTheme.token[`color${node.nodeColor}BorderHover`],
