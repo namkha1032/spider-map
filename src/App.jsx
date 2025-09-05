@@ -887,7 +887,7 @@ const MindMap = () => {
                         </Flex>
                     </Flex>
                 </div>
-                <div className='insideWrapper' style={{ flex: 1, width: "100%", overflow: "hidden" }}>
+                <div className='insideWrapper' style={{ flex: 1, width: "100%", overflowX: "hidden", overflowY: "auto" }}>
                     <ZoomPanWrapper>
                         {currentMap ? <>
                             {
