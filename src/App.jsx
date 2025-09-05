@@ -756,7 +756,8 @@ const MindMap = () => {
     }
     function createNewMap() {
         let newRoot = newNodeTemplate()
-        setCurrentMap([newRoot])
+        setModalNew(false)
+        setCurrentMap(newRoot)
     }
 
     const downloadJson = () => {
