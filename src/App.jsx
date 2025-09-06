@@ -15,7 +15,11 @@ import {
     BugOutlined,
     DownloadOutlined,
     UploadOutlined,
-    ReloadOutlined
+    ReloadOutlined,
+    BulbOutlined,
+    HighlightOutlined,
+    EditOutlined,
+    DeploymentUnitOutlined
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
@@ -40,15 +44,20 @@ import {
     theme
 } from "antd";
 
-
-
+import {
+    presetPalettes,
+    presetDarkPalettes,
+    presetPrimaryColors
+} from '@ant-design/colors';
 const CurrentMapContext = createContext(null);
 const ModeThemeContext = createContext(null);
+const MapLayoutContext = createContext(null);
 
 let radiusAmount = 12
 let cardWidth = 200
 let marginValue = 12
-
+let neutralLightPalletes = ["#ffffff", "#fafafa", "#f5f5f5", "#f0f0f0", "#d9d9d9", "#bfbfbf", "#8c8c8c", "#595959", "#434343", "#262626"]
+let neutralDarkPalletes = ["#262626", "#434343", "#595959", "#8c8c8c", "#bfbfbf", "#d9d9d9", "#f0f0f0", "#f5f5f5", "#fafafa", "#ffffff",]
 
 function recursiveModify(currNode, idToModify, attrModify, contentToModify) {
     if (currNode.nodeID == idToModify) {
@@ -62,6 +71,25 @@ function recursiveModify(currNode, idToModify, attrModify, contentToModify) {
                 return true
             }
         }
+    }
+}
+function recursiveFindNode(currNode, idToModify) {
+    if (currNode.nodeID == idToModify) {
+        return currNode
+    }
+    else {
+        for (let childNode of currNode.children) {
+            let found = recursiveFindNode(childNode, idToModify)
+            if (found) {
+                return found
+            }
+        }
+    }
+}
+function recursiveModifyTree(currNode, attrModify, contentToModify) {
+    currNode[attrModify] = contentToModify != null ? contentToModify : !currNode[attrModify]
+    for (let childNode of currNode.children) {
+        recursiveModifyTree(childNode, attrModify, contentToModify != null ? contentToModify : null)
     }
 }
 function generateRandomString(length) {
@@ -124,49 +152,68 @@ function handleMoveNode(id1, id2, currentMap, setCurrentMap) {
         setCurrentMap(cloneMap)
     }
 }
-function newNodeTemplate() {
+function newNodeTemplate(color) {
     return {
         "nodeID": generateRandomString(10),
         "nodeName": "New Node",
         "nodeDescription": "",
         "edgeName": "",
-        "nodeColor": "Default",
+        "nodeColor": color ? color : "neutral",
         "showDescription": false,
         "showChildren": true,
         "children": []
     }
 }
+function handleExpandTree(node, currentMap, setCurrentMap) {
+    let cloneMap = JSON.parse(JSON.stringify(currentMap))
+    let foundNode = recursiveFindNode(cloneMap, node.nodeID)
+    recursiveModifyTree(foundNode, "showChildren", !node.showChildren)
+    setCurrentMap(cloneMap)
+}
 
 
-const LeftLine = ({ node, nodeType }) => {
+const LeftLine = ({ node, nodeType, childrenLength }) => {
     let antdTheme = theme.useToken()
+    let { mapLayout, setMapLayout } = useContext(MapLayoutContext)
     let lineColor = antdTheme.token.colorTextTertiary
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    let showBorder = nodeType == "root" ? false : true
+    let hideLeftBorder = mapLayout == "spider" && childrenLength == 1
     return (
         <>
-            <Flex className='LeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
-                <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
-                    caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                    borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
-                    borderLeft: nodeType == "bot" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
-                    borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
-                }}>
+            <Flex align='center' style={{ width: cardWidth / 2 }}>
+                <div className='LeftLine' style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "100%" }}>
+                    <div onClick={(e) => {
+                        if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
+                            toggleShowChildren(node, currentMap, setCurrentMap)
+                        }
+                    }} style={{
+                        caretColor: "transparent", cursor: "pointer", flex: 1,
+                        borderBottom: showBorder && nodeType == "bot" ? `1px solid ${lineColor}` : "",
+                        borderLeft: showBorder && nodeType != "top" && !hideLeftBorder ? `1px solid ${lineColor}` : "",
+                        borderRadius: showBorder && nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
+                    }}>
 
+                    </div>
+                    <div onClick={(e) => {
+                        if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
+                            toggleShowChildren(node, currentMap, setCurrentMap)
+                        }
+                    }} style={{
+                        caretColor: "transparent", cursor: "pointer", flex: 1,
+                        borderTop: showBorder && nodeType != "bot" ? `1px solid ${lineColor}` : "",
+                        borderLeft: showBorder && nodeType != "bot" && !hideLeftBorder ? `1px solid ${lineColor}` : "",
+                        borderRadius: showBorder && nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
+                    }}>
+                    </div>
                 </div>
-                <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
-                    caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                    borderTop: (nodeType == "top" || nodeType == "mid" || nodeType == "topFolder") ? `1px solid ${lineColor}` : "",
-                    borderLeft: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
-                    borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
-                }}>
-                </div>
+                {node.children.length > 0 ? <Button onClick={() => { handleExpandTree(node, currentMap, setCurrentMap) }} className='expandButton' icon={node.showChildren ? <DownOutlined /> : <RightOutlined />} type='text' size='small' /> : <></>}
             </Flex>
         </>
     )
 }
 
-const EdgeComp = ({ node }) => {
-    const [showEdgeForm, setShowEdgeForm] = useState(false)
+const EdgeComp = ({ node, showEdgeForm, setShowEdgeForm }) => {
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     function handleRenameEdge(query) {
         const newName = query[`edgeName ${node.nodeID}`]
@@ -193,7 +240,7 @@ const EdgeComp = ({ node }) => {
                     onFinish={handleRenameEdge}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
-                    style={{ margin: 4 }}
+                    style={{ padding: 6, maxWidth: cardWidth }}
                 >
                     <Form.Item
                         name={`edgeName ${node.nodeID}`}
@@ -203,7 +250,7 @@ const EdgeComp = ({ node }) => {
                     </Form.Item>
                 </Form>
                     :
-                    <div style={{ minHeight: marginValue, margin: `0 4px 4px 4px`, width: "100%" }} onDoubleClick={() => { setShowEdgeForm(true) }}>
+                    <div className='edgeform' style={{ width: "100%", padding: `0 4px`, height: "100%" }} onDoubleClick={() => { setShowEdgeForm(true) }}>
                         <Typography.Text style={{ fontSize: 12 }}>{node.edgeName}</Typography.Text>
 
                     </div>
@@ -212,63 +259,167 @@ const EdgeComp = ({ node }) => {
     )
 }
 
-const NodeCard = ({ node }) => {
+const NodeCard = ({ node, setShowEdgeForm }) => {
     let antdTheme = theme.useToken()
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
     let [showDescriptionForm, setShowDescriptionForm] = useState(false)
     let [showNodeNameForm, setShowNodeNameForm] = useState(false)
+    let lineColor = antdTheme.token.colorTextTertiary
     const showModal = () => {
         setIsModalOpen(true);
     };
+    let backgroundIndex = 1
+    let borderIndex = 8
+    let colorPalettes = modeTheme == "light" ? presetPalettes : presetDarkPalettes
+    let neutralPalletes = modeTheme == "light" ? neutralLightPalletes : neutralDarkPalletes
     const contextMenuItems = [
         {
-            key: '1',
+            key: 'Node',
             label: (
                 <Typography.Text>
-                    Add
+                    Node
                 </Typography.Text>
             ),
             icon: <PlusOutlined />,
             onClick: addChild
         },
         {
-            key: '2',
+            key: 'Description',
+            label: (
+                <Typography.Text>
+                    Description
+                </Typography.Text>
+            ),
+            icon: <EditOutlined />,
+            onClick: () => {
+                toggleShowDescription(node, currentMap, setCurrentMap)
+                setShowDescriptionForm(true)
+            }
+        },
+        {
+            key: 'Edge',
+            label: (
+                <Typography.Text>
+                    Edge
+                </Typography.Text>
+            ),
+            icon: <DeploymentUnitOutlined />,
+            onClick: () => {
+                setShowEdgeForm(true)
+            }
+        },
+
+        {
+            key: 'Color',
             label: 'Color',
-            icon: <BgColorsOutlined />,
+            icon: <HighlightOutlined />,
             children: [
                 {
-                    key: 'Default',
-                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorFill, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
+                    key: 'neutral',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: neutralPalletes[backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
                     onClick: handleReColorNode
                 },
                 {
-                    key: 'Error',
-                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorErrorHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
+                    key: 'red',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["red"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
                     onClick: handleReColorNode
                 },
                 {
-                    key: 'Info',
-                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorInfoHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
+                    key: 'orange',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["orange"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
                     onClick: handleReColorNode
                 },
                 {
-                    key: 'Success',
-                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorSuccessHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
+                    key: 'yellow',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["yellow"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
                     onClick: handleReColorNode
                 },
                 {
-                    key: 'Warning',
-                    label: <div style={{ caretColor: "transparent", backgroundColor: antdTheme.token.colorWarningHover, borderRadius: radiusAmount, height: 22, width: 48 }}></div>,
+                    key: 'green',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["green"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorNode
+                },
+                {
+                    key: 'cyan',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["cyan"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorNode
+                },
+                {
+                    key: 'blue',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["blue"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorNode
+                },
+                {
+                    key: 'purple',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["purple"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorNode
+                },
+                {
+                    key: 'magenta',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["magenta"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
                     onClick: handleReColorNode
                 },
             ],
         },
         {
-            key: '3',
+            key: 'Fill',
+            label: 'Fill',
+            icon: <BgColorsOutlined />,
+            children: [
+                {
+                    key: 'fill_neutral',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: neutralPalletes[backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+                {
+                    key: 'fill_red',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["red"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+                {
+                    key: 'fill_orange',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["orange"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+                {
+                    key: 'fill_yellow',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["yellow"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+                {
+                    key: 'fill_green',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["green"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+                {
+                    key: 'fill_cyan',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["cyan"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+                {
+                    key: 'fill_blue',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["blue"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+                {
+                    key: 'fill_purple',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["purple"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+                {
+                    key: 'fill_magenta',
+                    label: <div style={{ caretColor: "transparent", backgroundColor: colorPalettes["magenta"][backgroundIndex], borderRadius: radiusAmount, height: 22, width: 50 }}></div>,
+                    onClick: handleReColorTree
+                },
+            ],
+        },
+        {
+            key: 'Delete',
+            label: 'Delete',
             danger: true,
             icon: <DeleteOutlined />,
-            label: 'Delete',
             onClick: showModal
         },
     ];
@@ -288,7 +439,7 @@ const NodeCard = ({ node }) => {
     }
     function recursiveAddChild(currNode, idToModify) {
         if (currNode.nodeID == idToModify) {
-            let newNode = newNodeTemplate()
+            let newNode = newNodeTemplate(currNode.nodeColor)
             currNode.children.push(newNode)
             currNode.showChildren = true
             return true
@@ -296,6 +447,22 @@ const NodeCard = ({ node }) => {
         else {
             for (let childNode of currNode.children) {
                 let found = recursiveAddChild(childNode, idToModify)
+                if (found) {
+                    return true
+                }
+            }
+        }
+    }
+    function recursiveAddSibling(currNode, idToModify) {
+        const index = currNode.children.findIndex(item => item.nodeID === idToModify);
+        if (index !== -1) {
+            let newNode = newNodeTemplate(currNode.nodeColor)
+            currNode.children.splice(index + 1, 0, newNode);
+            return true
+        }
+        else {
+            for (let childNode of currNode.children) {
+                let found = recursiveAddSibling(childNode, idToModify)
                 if (found) {
                     return true
                 }
@@ -322,6 +489,11 @@ const NodeCard = ({ node }) => {
         recursiveAddChild(cloneMap, node.nodeID)
         setCurrentMap(cloneMap)
     }
+    function addSibling() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveAddSibling(cloneMap, node.nodeID)
+        setCurrentMap(cloneMap)
+    }
     function handleDeleteNode() {
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
         recursiveDeleteNode(cloneMap, node.nodeID)
@@ -331,6 +503,12 @@ const NodeCard = ({ node }) => {
     function handleReColorNode(e) {
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
         recursiveModify(cloneMap, node.nodeID, "nodeColor", `${e.key}`)
+        setCurrentMap(cloneMap)
+    }
+    function handleReColorTree(e) {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        let foundNode = recursiveFindNode(cloneMap, node.nodeID)
+        recursiveModifyTree(foundNode, "nodeColor", `${e.key.replace("fill_", "")}`)
         setCurrentMap(cloneMap)
     }
     const onFinishFailed = errorInfo => {
@@ -372,17 +550,19 @@ const NodeCard = ({ node }) => {
                         size={"small"}
                         onClick={(e) => {
                             if (e.shiftKey) {
-                                addChild()
+                                addSibling()
                             }
                         }}
                         style={{
                             cursor: "pointer",
-                            borderColor: node.nodeColor == "Default" ? antdTheme.token.colorTextSecondary : antdTheme.token[`color${node.nodeColor}BorderHover`],
-                            width: node.showDescription ? 400 : cardWidth,
+                            borderColor: node.nodeColor == "neutral" ? neutralPalletes[borderIndex] : colorPalettes[node.nodeColor][borderIndex],
+                            minWidth: node.showDescription ? 400 : cardWidth,
+                            maxWidth: 400,
                             maxHeight: 400,
                             height: "auto",
-                            // height: node.showDescription ? 400 : 48,
-                            backgroundColor: node.nodeColor == "Default" ? antdTheme.token.colorFillQuaternary : antdTheme.token[`color${node.nodeColor}BgHover`],
+                            minHeight: 50,
+                            // height: node.showDescription ? 400 : 50,
+                            backgroundColor: node.nodeColor == "neutral" ? neutralPalletes[backgroundIndex] : colorPalettes[node.nodeColor][backgroundIndex],
                             // color: node.nodeColor == "Default" ? antdTheme.token.colorText : antdTheme.token[`color${node.nodeColor}TextActive`],
                             // transition: "width 0.3s, height 0.3s",
                             color: antdTheme.token.colorText
@@ -421,20 +601,29 @@ const NodeCard = ({ node }) => {
                                 </Space.Compact>
                             </Form>
                                 :
-                                <Typography.Text style={{ color: "inherit" }}
-                                    // onClick={(e) => {
-                                    //     if (e.shiftKey) {
-                                    //         setShowNodeNameForm(true)
-                                    //     }
-                                    // }}
+                                <Flex justify='space-between' align='center' gap={4}>
+                                    <Typography.Text style={{ color: "inherit" }}
+                                        // onClick={(e) => {
+                                        //     if (e.shiftKey) {
+                                        //         setShowNodeNameForm(true)
+                                        //     }
+                                        // }}
 
-                                    onDoubleClick={() => { setShowNodeNameForm(true) }}
-                                >{node.nodeName}</Typography.Text>
+                                        onDoubleClick={() => { setShowNodeNameForm(true) }}
+                                    >{node.nodeName}</Typography.Text>
+                                    {node.nodeDescription != "" ?
+                                        <Button style={{ borderWidth: 0 }} type='text' shape='circle' size='small' onClick={(e) => {
+                                            if (!e.shiftKey && !e.ctrlKey) {
+                                                toggleShowDescription(node, currentMap, setCurrentMap)
+                                            }
+                                        }} icon={<BulbOutlined />}>
+                                        </Button> : <></>}
+                                </Flex>
                         }
                         {
                             node.showDescription ?
                                 <>
-                                    <Divider size='large' style={{ margin: `${antdTheme.token.paddingSM}px 0` }} />
+                                    <Divider size='large' style={{ margin: `${antdTheme.token.paddingSM}px 0`, borderColor: antdTheme.token.colorTextQuaternary }} />
                                     {showDescriptionForm ?
                                         <Form
                                             name="basic"
@@ -497,75 +686,78 @@ const NodeCard = ({ node }) => {
                 onOk={handleDeleteNode}
                 onCancel={() => { setIsModalOpen(false) }}
             >
+                <div>
+                    <Typography.Text>Node: </Typography.Text>
+                    <Typography.Text mark>{node.nodeName}</Typography.Text>
+                </div>
                 <Typography.Text>All of its children will also be deleted</Typography.Text>
             </Modal>
         </>
     )
 }
 
-const FolderNode = ({ node, nodeType }) => {
+const FolderNode = ({ node, nodeType, childrenLength }) => {
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
+    const [showEdgeForm, setShowEdgeForm] = useState(false)
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     return (
         <>
-            <Flex vertical={true} style={{ marginTop: nodeType == "mid" ? marginValue : 0 }}>
+            <div>
+                <div style={{ caretColor: "transparent", borderLeft: nodeType == 'root' ? '' : `1px solid ${lineColor}`, flex: 1, minHeight: marginValue / 2, width: cardWidth }} />
                 <Flex>
-                    <Flex className='LeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
-                        <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
-                            caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                            borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
-                            borderLeft: nodeType == "bot" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
-                            borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
-                        }}>
+                    {/* <Flex align='center' style={{ width: cardWidth / 2 }}>
+                        <div className='LeftLine' style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "100%" }}>
+                            <div onClick={(e) => {
+                                if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
+                                    toggleShowChildren(node, currentMap, setCurrentMap)
+                                }
+                            }} style={{
+                                caretColor: "transparent", cursor: "pointer", flex: 1,
+                                borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
+                                borderLeft: nodeType != "root" ? `1px solid ${lineColor}` : "",
+                                borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
+                            }}>
 
+                            </div>
+                            <div onClick={(e) => {
+                                if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
+                                    toggleShowChildren(node, currentMap, setCurrentMap)
+                                }
+                            }} style={{
+                                caretColor: "transparent", cursor: "pointer", flex: 1,
+                                borderTop: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
+                                borderLeft: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
+                                // borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
+                            }}>
+                            </div>
                         </div>
-                        <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
-                            caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                            borderTop: (nodeType == "top" || nodeType == "mid" || nodeType == "topFolder") ? `1px solid ${lineColor}` : "",
-                            borderLeft: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
-                            borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
-                        }}>
-                        </div>
-                    </Flex>
-                    <div style={{ marginTop: nodeType == "bot" ? marginValue : 0 }}>
-                        <NodeCard node={node} />
-                    </div>
+                        {node.children.length > 0 ? <Button onClick={() => { handleExpandTree(node, currentMap, setCurrentMap) }} className='expandButton' icon={node.showChildren ? <DownOutlined /> : <RightOutlined />} type='text' size='small' /> : <></>}
+                    </Flex> */}
+                    <LeftLine node={node} nodeType={nodeType} childrenLength={childrenLength} />
+                    <NodeCard node={node} setShowEdgeForm={setShowEdgeForm} />
                 </Flex>
                 {
                     node?.children?.length > 0 && node?.showChildren ?
                         <>
-                            <Flex>
-                                <div style={{ caretColor: "transparent", minHeight: marginValue, width: cardWidth }} />
-                                <div style={{ caretColor: "transparent", minHeight: marginValue, minWidth: cardWidth / 2, borderLeft: `1px solid ${lineColor}` }}>
-                                    <EdgeComp node={node} />
+                            <div style={{ paddingLeft: cardWidth, caretColor: "transparent", minHeight: marginValue, minWidth: cardWidth / 2, borderLeft: nodeType == 'root' || nodeType == 'bot' ? '' : `1px solid ${lineColor}` }}>
+                                <div className='edgeborder' style={{ borderLeft: `1px solid ${lineColor}`, minHeight: marginValue / 2 }}>
+                                    <EdgeComp node={node} showEdgeForm={showEdgeForm} setShowEdgeForm={setShowEdgeForm} />
                                 </div>
-                            </Flex>
-                            <Flex>
-                                <div style={{ caretColor: "transparent", minWidth: cardWidth, minHeight: "100%" }}></div>
-                                <div style={{ caretColor: "transparent", borderLeft: `1px solid ${lineColor}`, minHeight: "100%" }}></div>
-                                <Flex vertical={true}>
-                                    {node.children.map((child, index) => {
-                                        if (index < node.children.length - 1) {
-                                            return (
-                                                <FolderNode key={child.nodeID} node={child} nodeType={index == 0 ? "topFolder" : "mid"} />
-                                            )
-                                        }
+                                {node.children.map((child, index) => {
+                                    if (index < node.children.length - 1) {
+                                        return (
+                                            <FolderNode key={child.nodeID} node={child} nodeType={"mid"} childrenLength={node.children.length} />
+                                        )
                                     }
-                                    )}
-                                </Flex>
-                            </Flex>
-                            <Flex vertical>
-                                <Flex>
-                                    <div style={{ caretColor: "transparent", minWidth: cardWidth }} />
-
-                                    <FolderNode node={node.children[node.children.length - 1]} nodeType={"bot"} />
-                                </Flex>
-                            </Flex>
+                                }
+                                )}
+                                <FolderNode node={node.children[node.children.length - 1]} nodeType={"bot"} childrenLength={node.children.length} />
+                            </div>
                         </>
-                        : <>
-                        </>
+                        : <div className="borderCheck" style={{ caretColor: "transparent", borderLeft: nodeType == 'bot' || nodeType == 'root' ? '' : `1px solid ${lineColor}`, minHeight: marginValue / 2, width: cardWidth }} />
                 }
-            </Flex>
+            </div >
         </ >
     )
 }
@@ -573,49 +765,67 @@ const FolderNode = ({ node, nodeType }) => {
 const SpiderNode = ({ node, nodeType, childrenLength }) => {
     let antdTheme = theme.useToken()
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    const [showEdgeForm, setShowEdgeForm] = useState(false)
     let lineColor = antdTheme.token.colorTextTertiary
     return (
         <>
             <Flex className='SpiderNode'>
                 <Flex vertical className='leftSection'>
-                    <div style={{ borderLeft: `1px solid ${nodeType == 'top' || nodeType == 'root' || childrenLength == 1 ? '' : lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
-                    <Flex align='center' className='flexTest'>
-                        <Flex className='SpiderLeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
-                            <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
+                    <div style={{ caretColor: "transparent", borderLeft: nodeType == 'top' || nodeType == 'root' || childrenLength == 1 ? "" : `1px solid ${lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
+                    <Flex className='flexTest'>
+                        {/* <Flex className='SpiderLeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
+                            <div onClick={(e) => {
+                                if (!e.shiftKey && !e.ctrlKey) {
+                                    toggleShowChildren(node, currentMap, setCurrentMap)
+                                }
+                            }} style={{
                                 caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                                borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
-                                borderLeft: nodeType != "top" && childrenLength > 1 ? `1px solid ${lineColor}` : "",
+                                borderBottom: nodeType == "bot" && nodeType != "root" ? `1px solid ${lineColor}` : "",
+                                borderLeft: nodeType != "top" && childrenLength > 1 && nodeType != "root" ? `1px solid ${lineColor}` : "",
                                 borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
                             }}>
 
                             </div>
-                            <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
+                            <div onClick={(e) => {
+                                if (!e.shiftKey && !e.ctrlKey) {
+                                    toggleShowChildren(node, currentMap, setCurrentMap)
+                                }
+                            }} style={{
                                 caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                                borderTop: nodeType != "bot" ? `1px solid ${lineColor}` : "",
-                                borderLeft: nodeType != "bot" && childrenLength > 1 ? `1px solid ${lineColor}` : "",
+                                borderTop: nodeType != "bot" && nodeType != "root" ? `1px solid ${lineColor}` : "",
+                                borderLeft: nodeType != "bot" && nodeType != "root" && childrenLength > 1 ? `1px solid ${lineColor}` : "",
                                 borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
                             }}>
                             </div>
-                        </Flex>
-                        <div
-                        // style={{ marginTop: marginValue / 2, marginBottom: marginValue / 2 }}
-                        >
-                            <NodeCard node={node} />
-                        </div>
+                        </Flex> */}
+
+                        <LeftLine node={node} nodeType={nodeType} childrenLength={childrenLength} />
+                        <NodeCard node={node} setShowEdgeForm={setShowEdgeForm} />
+                        {node.children.length > 0 && node.showChildren ?
+                            <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
+                                <div style={{
+                                    caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, display: "flex", alignItems: "flex-end"
+                                }}>
+                                    <EdgeComp node={node} showEdgeForm={showEdgeForm} setShowEdgeForm={setShowEdgeForm} />
+                                </div>
+                                <div style={{ caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, borderTop: `1px solid ${lineColor}` }}>
+                                </div>
+                            </Flex>
+                            : <></>}
                     </Flex>
-                    <div style={{ borderLeft: `1px solid ${nodeType == 'bot' || nodeType == 'root' || childrenLength == 1 ? '' : lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
+                    <div style={{ caretColor: "transparent", borderLeft: nodeType == 'bot' || nodeType == 'root' || childrenLength == 1 ? "" : `1px solid ${lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
                 </Flex>
-                {node.children.length > 0 && node.showChildren ?
+                {/* {node.children.length > 0 && node.showChildren ?
                     <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
                         <div style={{
                             caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, display: "flex", alignItems: "flex-end"
                         }}>
-                            <EdgeComp node={node} />
+                            <EdgeComp node={node} showEdgeForm={showEdgeForm} setShowEdgeForm={setShowEdgeForm} />
                         </div>
                         <div style={{ caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, borderTop: `1px solid ${lineColor}` }}>
                         </div>
                     </Flex>
-                    : <></>}
+                    : <></>} */}
                 {
                     node.children.length > 0 && node.showChildren ?
                         <>
@@ -763,19 +973,21 @@ const ZoomPanWrapper = ({ children }) => {
 const MindMap = () => {
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
+    const { mapLayout, setMapLayout } = useContext(MapLayoutContext)
 
     const [expandAll, setExpandAll] = useState(false);
     const [showAll, setShowAll] = useState(false);
-    const [mapLayout, setMapLayout] = useState("spider")
     const [modalNew, setModalNew] = useState(false);
 
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
     let layoutMargin = 18
-    function recursiveAll(currNode, currAtt, contentToModify) {
-        currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
+    function recursiveAll(currNode, currAtt, contentToModify, conditionAtt) {
+        if (conditionAtt == null || currNode[conditionAtt] != "") {
+            currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
+        }
         for (let child of currNode.children) {
-            recursiveAll(child, currAtt, contentToModify != null ? contentToModify : null)
+            recursiveAll(child, currAtt, contentToModify != null ? contentToModify : null, conditionAtt)
         }
     }
     function handleExpandAll() {
@@ -786,7 +998,7 @@ const MindMap = () => {
     }
     function handleShowAll() {
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
-        recursiveAll(cloneMap, "showDescription", !showAll)
+        recursiveAll(cloneMap, "showDescription", !showAll, "nodeDescription")
         setShowAll(!showAll)
         setCurrentMap(cloneMap)
     }
@@ -803,7 +1015,7 @@ const MindMap = () => {
 
         const link = document.createElement("a");
         link.href = url;
-        link.download = "map.json"; // filename
+        link.download = `${currentMap.nodeName}.json`; // filename
         link.click();
 
         URL.revokeObjectURL(url); // cleanup
@@ -851,12 +1063,13 @@ const MindMap = () => {
                 <div className='layoutMenu' style={{
                     margin: `0 ${layoutMargin}px`,
                     height: 60,
-                    borderBottom: `1px solid ${lineColor}`
+                    borderBottom: `1px solid ${lineColor}`,
+                    caretColor: "transparent"
                 }}>
                     <Flex align='center' justify='space-between' style={{ height: "100%" }}>
 
                         <Flex align='center' style={{ height: "100%" }}>
-                            <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} />
+                            <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} onClick={() => { setCurrentMap(null) }} style={{ cursor: "pointer" }} />
                             <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
                             <Flex align='center' gap={12}>
                                 {currentMap
@@ -948,6 +1161,7 @@ const MindMap = () => {
 function App() {
     const [currentMap, setCurrentMap] = useState(null);
     let [modeTheme, setModeTheme] = useState("light")
+    let [mapLayout, setMapLayout] = useState("spider")
     useEffect(() => {
         let modeThemeStorage = localStorage.getItem("modeTheme")
         if (modeThemeStorage == "dark") {
@@ -977,11 +1191,16 @@ function App() {
     return (
         <>
             <ConfigProvider theme={{
-                algorithm: modeTheme == "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm
+                algorithm: modeTheme == "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                token: {
+                    colorPrimary: "#000000"
+                }
             }}>
                 <ModeThemeContext.Provider value={{ modeTheme, setModeTheme }}>
                     <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
-                        <MindMap />
+                        <MapLayoutContext.Provider value={{ mapLayout, setMapLayout }}>
+                            <MindMap />
+                        </MapLayoutContext.Provider>
                     </CurrentMapContext.Provider>
                 </ModeThemeContext.Provider>
             </ConfigProvider>
