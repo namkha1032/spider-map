@@ -508,68 +508,65 @@ const FolderNode = ({ node, nodeType }) => {
     let lineColor = antdTheme.token.colorTextTertiary
     return (
         <>
+            <Flex vertical={true} style={{ marginTop: nodeType == "mid" ? marginValue : 0 }}>
+                <Flex>
+                    <Flex className='LeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
+                        <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
+                            caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
+                            borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
+                            borderLeft: nodeType == "bot" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
+                            borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
+                        }}>
 
-            <>
-                <Flex vertical={true} style={{ marginTop: nodeType == "mid" ? marginValue : 0 }}>
-                    <Flex>
-                        <Flex className='LeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
-                            <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
-                                caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                                borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
-                                borderLeft: nodeType == "bot" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
-                                borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
-                            }}>
-
-                            </div>
-                            <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
-                                caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                                borderTop: (nodeType == "top" || nodeType == "mid" || nodeType == "topFolder") ? `1px solid ${lineColor}` : "",
-                                borderLeft: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
-                                borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
-                            }}>
-                            </div>
-                        </Flex>
-                        <div style={{ marginTop: nodeType == "bot" ? marginValue : 0 }}>
-                            <NodeCard node={node} />
+                        </div>
+                        <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
+                            caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
+                            borderTop: (nodeType == "top" || nodeType == "mid" || nodeType == "topFolder") ? `1px solid ${lineColor}` : "",
+                            borderLeft: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
+                            borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
+                        }}>
                         </div>
                     </Flex>
-                    {
-                        node?.children?.length > 0 && node?.showChildren ?
-                            <>
-                                <Flex>
-                                    <div style={{ caretColor: "transparent", minHeight: marginValue, width: cardWidth }} />
-                                    <div style={{ caretColor: "transparent", minHeight: marginValue, minWidth: cardWidth / 2, borderLeft: `1px solid ${lineColor}` }}>
-                                        <EdgeComp node={node} />
-                                    </div>
-                                </Flex>
-                                <Flex>
-                                    <div style={{ caretColor: "transparent", minWidth: cardWidth, minHeight: "100%" }}></div>
-                                    <div style={{ caretColor: "transparent", borderLeft: `1px solid ${lineColor}`, minHeight: "100%" }}></div>
-                                    <Flex vertical={true}>
-                                        {node.children.map((child, index) => {
-                                            if (index < node.children.length - 1) {
-                                                return (
-                                                    <FolderNode key={child.nodeID} node={child} nodeType={index == 0 ? "topFolder" : "mid"} />
-                                                )
-                                            }
-                                        }
-                                        )}
-                                    </Flex>
-                                </Flex>
-                                <Flex vertical>
-                                    <Flex>
-                                        <div style={{ caretColor: "transparent", minWidth: cardWidth }} />
-
-                                        <FolderNode node={node.children[node.children.length - 1]} nodeType={"bot"} />
-                                    </Flex>
-                                </Flex>
-                            </>
-                            : <>
-                            </>
-                    }
+                    <div style={{ marginTop: nodeType == "bot" ? marginValue : 0 }}>
+                        <NodeCard node={node} />
+                    </div>
                 </Flex>
-            </ >
-        </>
+                {
+                    node?.children?.length > 0 && node?.showChildren ?
+                        <>
+                            <Flex>
+                                <div style={{ caretColor: "transparent", minHeight: marginValue, width: cardWidth }} />
+                                <div style={{ caretColor: "transparent", minHeight: marginValue, minWidth: cardWidth / 2, borderLeft: `1px solid ${lineColor}` }}>
+                                    <EdgeComp node={node} />
+                                </div>
+                            </Flex>
+                            <Flex>
+                                <div style={{ caretColor: "transparent", minWidth: cardWidth, minHeight: "100%" }}></div>
+                                <div style={{ caretColor: "transparent", borderLeft: `1px solid ${lineColor}`, minHeight: "100%" }}></div>
+                                <Flex vertical={true}>
+                                    {node.children.map((child, index) => {
+                                        if (index < node.children.length - 1) {
+                                            return (
+                                                <FolderNode key={child.nodeID} node={child} nodeType={index == 0 ? "topFolder" : "mid"} />
+                                            )
+                                        }
+                                    }
+                                    )}
+                                </Flex>
+                            </Flex>
+                            <Flex vertical>
+                                <Flex>
+                                    <div style={{ caretColor: "transparent", minWidth: cardWidth }} />
+
+                                    <FolderNode node={node.children[node.children.length - 1]} nodeType={"bot"} />
+                                </Flex>
+                            </Flex>
+                        </>
+                        : <>
+                        </>
+                }
+            </Flex>
+        </ >
     )
 }
 
@@ -581,7 +578,7 @@ const SpiderNode = ({ node, nodeType, childrenLength }) => {
         <>
             <Flex className='SpiderNode'>
                 <Flex vertical className='leftSection'>
-                    <div style={{ borderLeft: `1px solid ${nodeType == 'top' || nodeType == 'root' ? '' : lineColor}`, flex: 1 }} />
+                    <div style={{ borderLeft: `1px solid ${nodeType == 'top' || nodeType == 'root' || childrenLength == 1 ? '' : lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
                     <Flex align='center' className='flexTest'>
                         <Flex className='SpiderLeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
                             <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
@@ -600,11 +597,13 @@ const SpiderNode = ({ node, nodeType, childrenLength }) => {
                             }}>
                             </div>
                         </Flex>
-                        <div style={{ marginTop: marginValue / 2, marginBottom: marginValue / 2 }}>
+                        <div
+                        // style={{ marginTop: marginValue / 2, marginBottom: marginValue / 2 }}
+                        >
                             <NodeCard node={node} />
                         </div>
                     </Flex>
-                    <div style={{ borderLeft: `1px solid ${nodeType == 'bot' || nodeType == 'root' ? '' : lineColor}`, flex: 1 }} />
+                    <div style={{ borderLeft: `1px solid ${nodeType == 'bot' || nodeType == 'root' || childrenLength == 1 ? '' : lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
                 </Flex>
                 {node.children.length > 0 && node.showChildren ?
                     <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
