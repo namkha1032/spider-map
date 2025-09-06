@@ -148,16 +148,16 @@ const LeftLine = ({ node, nodeType }) => {
                 <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
                     caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
                     borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
-                    borderLeft: nodeType == "bot" ? `1px solid ${lineColor}` : "",
+                    borderLeft: nodeType == "bot" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
                     borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
                 }}>
 
                 </div>
                 <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
                     caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                    borderTop: (nodeType == "topSpider" || nodeType == "mid" || nodeType == "topFolder") ? `1px solid ${lineColor}` : "",
-                    borderLeft: nodeType == "topSpider" ? `1px solid ${lineColor}` : "",
-                    borderRadius: nodeType == "topSpider" ? `${radiusAmount}px 0 0 0` : ""
+                    borderTop: (nodeType == "top" || nodeType == "mid" || nodeType == "topFolder") ? `1px solid ${lineColor}` : "",
+                    borderLeft: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
+                    borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
                 }}>
                 </div>
             </Flex>
@@ -203,7 +203,7 @@ const EdgeComp = ({ node }) => {
                     </Form.Item>
                 </Form>
                     :
-                    <div style={{ minHeight: marginValue, margin: `0 4px 4px 4px` }} onDoubleClick={() => { setShowEdgeForm(true) }}>
+                    <div style={{ minHeight: marginValue, margin: `0 4px 4px 4px`, width: "100%" }} onDoubleClick={() => { setShowEdgeForm(true) }}>
                         <Typography.Text style={{ fontSize: 12 }}>{node.edgeName}</Typography.Text>
 
                     </div>
@@ -512,7 +512,23 @@ const FolderNode = ({ node, nodeType }) => {
             <>
                 <Flex vertical={true} style={{ marginTop: nodeType == "mid" ? marginValue : 0 }}>
                     <Flex>
-                        <LeftLine node={node} nodeType={nodeType} />
+                        <Flex className='LeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
+                            <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
+                                caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
+                                borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
+                                borderLeft: nodeType == "bot" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
+                                borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
+                            }}>
+
+                            </div>
+                            <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
+                                caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
+                                borderTop: (nodeType == "top" || nodeType == "mid" || nodeType == "topFolder") ? `1px solid ${lineColor}` : "",
+                                borderLeft: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
+                                borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
+                            }}>
+                            </div>
+                        </Flex>
                         <div style={{ marginTop: nodeType == "bot" ? marginValue : 0 }}>
                             <NodeCard node={node} />
                         </div>
@@ -557,18 +573,38 @@ const FolderNode = ({ node, nodeType }) => {
     )
 }
 
-const SpiderNode = ({ node, nodeType }) => {
+const SpiderNode = ({ node, nodeType, childrenLength }) => {
     let antdTheme = theme.useToken()
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     let lineColor = antdTheme.token.colorTextTertiary
     return (
         <>
-            <Flex>
-                <Flex align='center' className='flexTest'>
-                    <LeftLine node={node} nodeType={nodeType} />
-                    <div style={{ marginTop: marginValue / 2, marginBottom: marginValue / 2 }}>
-                        <NodeCard node={node} />
-                    </div>
+            <Flex className='SpiderNode'>
+                <Flex vertical className='leftSection'>
+                    <div style={{ borderLeft: `1px solid ${nodeType == 'top' || nodeType == 'root' ? '' : lineColor}`, flex: 1 }} />
+                    <Flex align='center' className='flexTest'>
+                        <Flex className='SpiderLeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
+                            <div onClick={() => { toggleShowDescription(node, currentMap, setCurrentMap) }} style={{
+                                caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
+                                borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
+                                borderLeft: nodeType != "top" && childrenLength > 1 ? `1px solid ${lineColor}` : "",
+                                borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
+                            }}>
+
+                            </div>
+                            <div onClick={() => { toggleShowChildren(node, currentMap, setCurrentMap) }} style={{
+                                caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
+                                borderTop: nodeType != "bot" ? `1px solid ${lineColor}` : "",
+                                borderLeft: nodeType != "bot" && childrenLength > 1 ? `1px solid ${lineColor}` : "",
+                                borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
+                            }}>
+                            </div>
+                        </Flex>
+                        <div style={{ marginTop: marginValue / 2, marginBottom: marginValue / 2 }}>
+                            <NodeCard node={node} />
+                        </div>
+                    </Flex>
+                    <div style={{ borderLeft: `1px solid ${nodeType == 'bot' || nodeType == 'root' ? '' : lineColor}`, flex: 1 }} />
                 </Flex>
                 {node.children.length > 0 && node.showChildren ?
                     <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
@@ -587,27 +623,23 @@ const SpiderNode = ({ node, nodeType }) => {
                             <Flex vertical justify='center'>
                                 {/* top child */}
                                 {node.children.length > 1 ?
-                                    <SpiderNode node={node.children[0]} nodeType={"topSpider"} />
+                                    <SpiderNode node={node.children[0]} nodeType={"top"} childrenLength={node.children.length} />
                                     : <></>}
                                 {/* mid child */}
-                                <Flex>
-                                    {node.children.length > 1 ? <div style={{ caretColor: "transparent", minHeight: "100%", borderLeft: `1px solid ${lineColor}` }} /> : <></>}
-                                    <Flex vertical>
-                                        {
-                                            node.children.map((child, index) => {
-                                                if ((index != 0 && index != node.children.length - 1) || node.children.length == 1) {
-                                                    return (
-                                                        <SpiderNode key={child.nodeID} node={child} nodeType={"mid"} />
-                                                    )
-                                                }
-                                            }
+                                {/* {node.children.length > 1 ? <div style={{ caretColor: "transparent", minHeight: "100%", borderLeft: `1px solid ${lineColor}` }} /> : <></>} */}
+                                {
+                                    node.children.map((child, index) => {
+                                        if ((index != 0 && index != node.children.length - 1) || node.children.length == 1) {
+                                            return (
+                                                <SpiderNode key={child.nodeID} node={child} nodeType={"mid"} childrenLength={node.children.length} />
                                             )
                                         }
-                                    </Flex>
-                                </Flex>
+                                    }
+                                    )
+                                }
                                 {/* bot child */}
                                 {node.children.length >= 2 ?
-                                    <SpiderNode node={node.children[node.children.length - 1]} nodeType={"bot"} /> : <></>}
+                                    <SpiderNode node={node.children[node.children.length - 1]} nodeType={"bot"} childrenLength={node.children.length} /> : <></>}
                             </Flex>
                         </> :
                         <></>
@@ -891,10 +923,10 @@ const MindMap = () => {
                     <ZoomPanWrapper>
                         {currentMap ? <>
                             {
-                                mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} /> : <></>
+                                mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
                             }
                             {
-                                mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} /> : <></>
+                                mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
                             }
                         </> : <></>}
 
