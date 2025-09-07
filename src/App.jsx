@@ -1051,87 +1051,79 @@ const MindMap = () => {
     };
     return (
         <>
-            <Layout
-                style={{
-                    height: "100%",
-                    padding: 0,
-                    scrollbarColor: "red",
-                    display: "flex",
-                    flexDirection: "column"
-                }}
-            >
-                <div className='layoutMenu' style={{
-                    margin: `0 ${layoutMargin}px`,
-                    height: 60,
-                    borderBottom: `1px solid ${lineColor}`,
-                    caretColor: "transparent"
-                }}>
-                    <Flex align='center' justify='space-between' style={{ height: "100%" }}>
+            <div className='layoutMenu' style={{
+                margin: `0 ${layoutMargin}px`,
+                height: 60,
+                borderBottom: `1px solid ${lineColor}`,
+                caretColor: "transparent"
+            }}>
+                <Flex align='center' justify='space-between' style={{ height: "100%" }}>
 
-                        <Flex align='center' style={{ height: "100%" }}>
-                            <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} onClick={() => { setCurrentMap(null) }} style={{ cursor: "pointer" }} />
-                            <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
-                            <Flex align='center' gap={12}>
-                                {currentMap
-                                    ? <>
-                                        <Button onClick={handleExpandAll} variant="filled" color='default' shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
-                                            {expandAll ? "Collapse all" : "Expand all"}
-                                        </Button>
-                                        <Button onClick={handleShowAll} variant="filled" color='default' shape="default" icon={showAll ? <EyeInvisibleOutlined /> : <EyeOutlined />}>
-                                            {showAll ? "Hide all" : "Show all"}
-                                        </Button>
-                                    </>
-                                    : <>
-                                        <Upload {...uploadProps}>
-                                            <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
-                                        </Upload>
-                                        <Button onClick={() => { setModalNew(true) }} variant="filled" color="default" icon={<PlusOutlined />}>
-                                            New map
-                                        </Button>
-                                    </>
-                                }
-                            </Flex>
-                        </Flex>
-                        <Flex gap={'small'} align='center'>
-
-                            {currentMap ?
-                                <>
-                                    <Segmented
-                                        block={false}
-                                        size={"large"}
-                                        // shape="round"
-                                        onChange={(value) => setMapLayout(value)}
-                                        options={[
-                                            { value: 'spider', label: 'Spider layout', icon: <BugOutlined /> },
-                                            { value: 'folder', label: 'Folder layout', icon: <FolderOpenOutlined /> },
-                                        ]}
-                                    />
-                                    <Button color='default' variant='solid' onClick={downloadJson} shape="round" icon={<DownloadOutlined />}>
-                                        Download
+                    <Flex align='center' style={{ height: "100%" }}>
+                        <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} onClick={() => { setCurrentMap(null) }} style={{ cursor: "pointer" }} />
+                        <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
+                        <Flex align='center' gap={12}>
+                            {currentMap
+                                ? <>
+                                    <Button onClick={handleExpandAll} variant="filled" color='default' shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
+                                        {expandAll ? "Collapse all" : "Expand all"}
+                                    </Button>
+                                    <Button onClick={handleShowAll} variant="filled" color='default' shape="default" icon={showAll ? <EyeInvisibleOutlined /> : <EyeOutlined />}>
+                                        {showAll ? "Hide all" : "Show all"}
                                     </Button>
                                 </>
-                                :
-                                <Button onClick={loadBackup} variant='solid' color='default' shape="round" icon={<ReloadOutlined />}>
-                                    Load backup
-                                </Button>}
-                            <Switch
-                                checked={modeTheme == "light"}
-                                unCheckedChildren={<MoonFilled />}
-                                checkedChildren={<SunFilled />}
-                                onClick={(checked, event) => {
-                                    if (checked) {
-                                        localStorage.setItem("modeTheme", "light")
-                                        setModeTheme("light")
-                                    }
-                                    else {
-                                        localStorage.setItem("modeTheme", "dark")
-                                        setModeTheme("dark")
-                                    }
-                                }} />
+                                : <>
+                                    <Upload {...uploadProps}>
+                                        <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
+                                    </Upload>
+                                    <Button onClick={() => { setModalNew(true) }} variant="filled" color="default" icon={<PlusOutlined />}>
+                                        New map
+                                    </Button>
+                                </>
+                            }
                         </Flex>
                     </Flex>
-                </div>
-                <div className='insideWrapper' style={{ flex: 1, width: "100%", overflowX: "hidden", overflowY: "auto" }}>
+                    <Flex gap={'small'} align='center'>
+
+                        {currentMap ?
+                            <>
+                                <Segmented
+                                    block={false}
+                                    size={"large"}
+                                    // shape="round"
+                                    onChange={(value) => setMapLayout(value)}
+                                    options={[
+                                        { value: 'spider', label: 'Spider layout', icon: <BugOutlined /> },
+                                        { value: 'folder', label: 'Folder layout', icon: <FolderOpenOutlined /> },
+                                    ]}
+                                />
+                                <Button color='default' variant='solid' onClick={downloadJson} shape="round" icon={<DownloadOutlined />}>
+                                    Download
+                                </Button>
+                            </>
+                            :
+                            <Button onClick={loadBackup} variant='solid' color='default' shape="round" icon={<ReloadOutlined />}>
+                                Load backup
+                            </Button>}
+                        <Switch
+                            checked={modeTheme == "light"}
+                            unCheckedChildren={<MoonFilled />}
+                            checkedChildren={<SunFilled />}
+                            onClick={(checked, event) => {
+                                if (checked) {
+                                    localStorage.setItem("modeTheme", "light")
+                                    setModeTheme("light")
+                                }
+                                else {
+                                    localStorage.setItem("modeTheme", "dark")
+                                    setModeTheme("dark")
+                                }
+                            }} />
+                    </Flex>
+                </Flex>
+            </div>
+            <div className='insideWrapper' style={{ caretColor: "transparent", flex: 1, width: "100%", overflowX: "hidden", overflowY: "auto", display: 'flex', justifyContent: "center", alignItems: "center" }}>
+                {currentMap ?
                     <ZoomPanWrapper>
                         {currentMap ? <>
                             {
@@ -1142,18 +1134,29 @@ const MindMap = () => {
                             }
                         </> : <></>}
 
-                    </ZoomPanWrapper>
-                </div>
-                <Modal centered
-                    title="Do you want to create a new map?"
-                    closable={{ 'aria-label': 'Custom Close Button' }}
-                    open={modalNew}
-                    onOk={createNewMap}
-                    onCancel={() => { setModalNew(false) }}
-                >
-                    <Typography.Text>If you create a new map, the current backup map will be deleted</Typography.Text>
-                </Modal>
-            </Layout>
+                    </ZoomPanWrapper> : <>
+                        {/* <style>
+                            {`
+                            @keyframes spin {
+                                0% { transform: rotate(0deg); }
+                                100% { transform: rotate(360deg); }
+                            }
+                            `}
+                        </style> */}
+                        <img width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`}
+                        // style={{ animation: "spin 20s linear infinite" }} 
+                        />
+                    </>}
+            </div>
+            <Modal centered
+                title="Do you want to create a new map?"
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={modalNew}
+                onOk={createNewMap}
+                onCancel={() => { setModalNew(false) }}
+            >
+                <Typography.Text>If you create a new map, the current backup map will be deleted</Typography.Text>
+            </Modal>
         </>
     );
 }
@@ -1162,6 +1165,17 @@ function App() {
     const [currentMap, setCurrentMap] = useState(null);
     let [modeTheme, setModeTheme] = useState("light")
     let [mapLayout, setMapLayout] = useState("spider")
+    const [screen, setScreen] = useState(0);
+
+    useEffect(() => {
+        const timerA = setTimeout(() => setScreen(1), 1000); // show B after 2s
+        const timerB = setTimeout(() => setScreen(2), 4700); // show main after 4s
+
+        return () => {
+            clearTimeout(timerA);
+            clearTimeout(timerB);
+        };
+    }, []);
     useEffect(() => {
         let modeThemeStorage = localStorage.getItem("modeTheme")
         if (modeThemeStorage == "dark") {
@@ -1199,7 +1213,24 @@ function App() {
                 <ModeThemeContext.Provider value={{ modeTheme, setModeTheme }}>
                     <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
                         <MapLayoutContext.Provider value={{ mapLayout, setMapLayout }}>
-                            <MindMap />
+                            {screen != 2 ?
+                                <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                    {screen == 1 ? <img src={`${window.location.href}/logo_motion.gif`} /> : <></>}
+
+                                </div> : <></>}
+                            <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                <Layout
+                                    style={{
+                                        height: "100%",
+                                        width: "100%",
+                                        padding: 0,
+                                        scrollbarColor: "red",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
+                                    }}
+                                ><MindMap /></Layout>
+                            </div>
                         </MapLayoutContext.Provider>
                     </CurrentMapContext.Provider>
                 </ModeThemeContext.Provider>
