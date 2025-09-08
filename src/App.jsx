@@ -41,7 +41,8 @@ import {
     Segmented,
     Upload,
     Layout,
-    theme
+    theme,
+    Tabs
 } from "antd";
 
 import {
@@ -181,8 +182,8 @@ const LeftLine = ({ node, nodeType, childrenLength }) => {
     let hideLeftBorder = mapLayout == "spider" && childrenLength == 1
     return (
         <>
-            <Flex align='center' style={{ width: cardWidth / 2 }}>
-                <div className='LeftLine' style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "100%" }}>
+            <Flex className='LeftLine' align='center' style={{ width: cardWidth / 2 }}>
+                <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "100%" }}>
                     <div onClick={(e) => {
                         if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
                             toggleShowChildren(node, currentMap, setCurrentMap)
@@ -250,7 +251,7 @@ const EdgeComp = ({ node, showEdgeForm, setShowEdgeForm }) => {
                     </Form.Item>
                 </Form>
                     :
-                    <div className='edgeform' style={{ width: "100%", padding: `0 4px`, height: "100%" }} onDoubleClick={() => { setShowEdgeForm(true) }}>
+                    <div className='edgeform' style={{ width: "100%", padding: `0 4px`, height: "100%", display: "flex", alignItems: "flex-end" }} onDoubleClick={() => { setShowEdgeForm(true) }}>
                         <Typography.Text style={{ fontSize: 12 }}>{node.edgeName}</Typography.Text>
 
                     </div>
@@ -802,7 +803,7 @@ const SpiderNode = ({ node, nodeType, childrenLength }) => {
                         <LeftLine node={node} nodeType={nodeType} childrenLength={childrenLength} />
                         <NodeCard node={node} setShowEdgeForm={setShowEdgeForm} />
                         {node.children.length > 0 && node.showChildren ?
-                            <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
+                            <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2 }}>
                                 <div style={{
                                     caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, display: "flex", alignItems: "flex-end"
                                 }}>
@@ -816,7 +817,7 @@ const SpiderNode = ({ node, nodeType, childrenLength }) => {
                     <div style={{ caretColor: "transparent", borderLeft: nodeType == 'bot' || nodeType == 'root' || childrenLength == 1 ? "" : `1px solid ${lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
                 </Flex>
                 {/* {node.children.length > 0 && node.showChildren ?
-                    <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
+                    <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2 }}>
                         <div style={{
                             caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, display: "flex", alignItems: "flex-end"
                         }}>
@@ -978,6 +979,16 @@ const MindMap = () => {
     const [expandAll, setExpandAll] = useState(false);
     const [showAll, setShowAll] = useState(false);
     const [modalNew, setModalNew] = useState(false);
+    const initialItems = [
+        { label: 'Tab 1', key: '1' },
+        { label: 'Tab 2', key: '2' },
+        {
+            label: 'Tab 3',
+            key: '3',
+            closable: false,
+        },
+    ];
+    const [mapList, setMapList] = useState(initialItems);
 
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
@@ -1007,7 +1018,6 @@ const MindMap = () => {
         setModalNew(false)
         setCurrentMap(newRoot)
     }
-
     const downloadJson = () => {
         const jsonString = JSON.stringify(currentMap, null, 4); // formatted JSON
         const blob = new Blob([jsonString], { type: "application/json" });
@@ -1082,6 +1092,18 @@ const MindMap = () => {
                                 </>
                             }
                         </Flex>
+                        <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
+
+                        <Tabs
+                            type="editable-card"
+                            // onChange={ }
+                            // activeKey={ }
+                            // onEdit={ }
+                            items={[]}
+                            tabBarStyle={{
+                                margin: 0
+                            }}
+                        />
                     </Flex>
                     <Flex gap={'small'} align='center'>
 
@@ -1122,7 +1144,7 @@ const MindMap = () => {
                     </Flex>
                 </Flex>
             </div>
-            <div className='insideWrapper' style={{ caretColor: "transparent", flex: 1, width: "100%", overflowX: "hidden", overflowY: "auto", display: 'flex', justifyContent: "center", alignItems: "center" }}>
+            <div className='insideWrapper' style={{ flex: 1, width: "100%", overflowX: "hidden", overflowY: "auto", display: 'flex', justifyContent: "center", alignItems: "center" }}>
                 {currentMap ?
                     <ZoomPanWrapper>
                         {currentMap ? <>
@@ -1143,7 +1165,7 @@ const MindMap = () => {
                             }
                             `}
                         </style> */}
-                        <img width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`}
+                        <img style={{ caretColor: "transparent" }} width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`}
                         // style={{ animation: "spin 20s linear infinite" }} 
                         />
                     </>}
@@ -1213,7 +1235,7 @@ function App() {
                 <ModeThemeContext.Provider value={{ modeTheme, setModeTheme }}>
                     <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
                         <MapLayoutContext.Provider value={{ mapLayout, setMapLayout }}>
-                            {screen != 2 ?
+                            {/* {screen != 2 ?
                                 <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                     {screen == 1 ? <img src={`${window.location.href}/logo_motion.gif`} /> : <></>}
 
@@ -1228,6 +1250,19 @@ function App() {
                                         display: "flex",
                                         flexDirection: "column",
                                         transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
+                                    }}
+                                ><MindMap /></Layout>
+                            </div> */}
+                            <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                <Layout
+                                    style={{
+                                        height: "100%",
+                                        width: "100%",
+                                        padding: 0,
+                                        scrollbarColor: "red",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        // transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
                                     }}
                                 ><MindMap /></Layout>
                             </div>
