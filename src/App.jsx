@@ -43,7 +43,7 @@ import {
     Layout,
     theme,
     Tabs,
-    message
+    Table
 } from "antd";
 
 import {
@@ -972,33 +972,6 @@ const ZoomPanWrapper = ({ children }) => {
     );
 };
 
-const OneMap = () => {
-    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
-    const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
-    const { mapLayout, setMapLayout } = useContext(MapLayoutContext)
-    return (
-        <>
-            {
-                currentMap ?
-                    <ZoomPanWrapper>
-                        {
-                            currentMap ? <>
-                                {
-                                    mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
-                                }
-                                {
-                                    mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
-                                }
-                            </> : <></>
-                        }
-
-                    </ZoomPanWrapper > : <>
-                        <img style={{ caretColor: "transparent" }} width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`}
-                        />
-                    </>}
-        </>
-    )
-}
 
 const MindMap = () => {
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
@@ -1010,10 +983,35 @@ const MindMap = () => {
     const [modalNew, setModalNew] = useState(false);
     const [modalBackup, setModalBackup] = useState(false)
     const [mapList, setMapList] = useState([]);
+    useEffect(() => {
+        if (currentMap) {
+            let cloneMapList = JSON.parse(JSON.stringify(mapList))
+            let index = cloneMapList.findIndex(item => item.key == currentMap.nodeID)
+            cloneMapList.splice(index, 1, {
+                key: currentMap.nodeID,
+                label: currentMap.nodeName
+            })
+            setMapList(cloneMapList)
+        }
+    }, [currentMap?.nodeName])
     console.log('mapList', mapList)
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
     let layoutMargin = 18
+    let tableColumn = [
+        {
+            title: 'Name',
+            dataIndex: 'nodeName',
+            key: 'nodeName',
+            render: val => <Typography.Text>{val}</Typography.Text>,
+        },
+        {
+            title: 'Description',
+            dataIndex: 'nodeDescription',
+            key: 'nodeDescription',
+            render: val => <Typography.Text>{val}</Typography.Text>,
+        }
+    ]
     function recursiveAll(currNode, currAtt, contentToModify, conditionAtt) {
         if (conditionAtt == null || currNode[conditionAtt] != "") {
             currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
@@ -1104,26 +1102,44 @@ const MindMap = () => {
         if (action === 'add') {
             setModalBackup(true)
         } else {
-            let newActiveKey = currentMap.nodeID;
-            let lastIndex = -1;
-            mapList.forEach((item, i) => {
-                if (item.key === targetKey) {
-                    lastIndex = i - 1;
+            let cloneMapList = JSON.parse(JSON.stringify(mapList))
+            cloneMapList = cloneMapList.filter(item => item.key !== targetKey)
+            let newCurrentMap = null
+            if (cloneMapList.length > 0) {
+                if (targetKey == currentMap.nodeID) {
+                    let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
+                    const index = backupMaps?.findIndex(obj => obj.nodeID === cloneMapList[0].key);
+                    newCurrentMap = backupMaps[index]
+                    setCurrentMap(newCurrentMap)
                 }
-            });
-            const newPanes = mapList.filter(item => item.key !== targetKey);
-            if (newPanes.length > 0 && newActiveKey === targetKey) {
-                if (lastIndex >= 0) {
-                    newActiveKey = newPanes[lastIndex].key;
-                } else {
-                    newActiveKey = newPanes[0].key;
-                }
+                setMapList(cloneMapList)
             }
-            else if (newPanes.length == 0) {
-                newActiveKey = null
+            else {
+                setMapList([])
+                setCurrentMap(null)
             }
-            setMapList(newPanes);
-            setCurrentMap(newActiveKey);
+            // fwqed qw
+            // let lastIndex = -1;
+            // mapList.forEach((item, i) => {
+            //     if (item.key === targetKey) {
+            //         lastIndex = i - 1;
+            //     }
+            // });
+            // const newPanes = mapList.filter(item => item.key !== targetKey);
+            // if (newPanes.length > 0 && newActiveKey === targetKey) {
+            //     if (lastIndex >= 0) {
+            //         newActiveKey = newPanes[lastIndex].key;
+            //     } else {
+            //         newActiveKey = newPanes[0].key;
+            //     }
+            // }
+            // else if (newPanes.length == 0) {
+            //     newActiveKey = null
+            // }
+            // setMapList(newPanes);
+            // const index = newPanes?.findIndex(obj => obj.nodeID === newActiveKey);
+            // let newMap = index != -1 ? newPanes[index] : null
+            // setCurrentMap(newMap);
         }
     };
     function changeActiveTab(newNodeID) {
@@ -1144,7 +1160,7 @@ const MindMap = () => {
 
                     <Flex align='center' style={{ height: "100%" }}>
                         <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} onClick={() => { setCurrentMap(null) }} style={{ cursor: "pointer" }} />
-                        <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
+                        {/* <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
                         <Flex align='center' gap={12}>
                             {currentMap
                                 ? <>
@@ -1164,7 +1180,7 @@ const MindMap = () => {
                                     </Button>
                                 </>
                             }
-                        </Flex>
+                        </Flex> */}
                         <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
 
                         <Tabs
@@ -1242,7 +1258,7 @@ const MindMap = () => {
                         <img style={{ caretColor: "transparent" }} width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`} />
                     </>}
             </div>
-            <Modal centered
+            {/* <Modal centered
                 title="Do you want to create a new map?"
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 open={modalNew}
@@ -1250,20 +1266,47 @@ const MindMap = () => {
                 onCancel={() => { setModalNew(false) }}
             >
                 <Typography.Text>If you create a new map, the current backup map will be deleted</Typography.Text>
-            </Modal>
+            </Modal> */}
             <Modal centered
-                title="Backup maps"
-                // closable={{ 'aria-label': 'Custom Close Button' }}
+                title="Open map"
                 open={modalBackup}
-                // onOk={loadBackup}
+                onOk={loadBackup}
                 onCancel={() => { setModalBackup(false) }}
+                footer={null}
             >
-                {JSON.parse(localStorage.getItem("backupMaps"))?.map((child, index) =>
-                    <div key={child.nodeID} onClick={() => { loadBackup(child) }}>
-                        {child.nodeName}
-                    </div>
-                )}
-            </Modal>
+                {/* {
+                    JSON.parse(localStorage.getItem("backupMaps"))?.map((child, index) =>
+                        <div key={child.nodeID} onClick={() => { loadBackup(child) }}>
+                            {child.nodeName}
+                        </div>
+                    )
+                } */}
+                <Table expandable={{ expandIcon: () => <></> }}
+                    rowKey={"nodeID"}
+                    columns={tableColumn}
+                    dataSource={JSON.parse(localStorage.getItem("backupMaps"))}
+                    onRow={(record, rowIndex) => {
+                        return {
+                            onClick: (event) => { loadBackup(record) }, // click row
+                            onDoubleClick: (event) => { }, // double click row
+                            onContextMenu: (event) => { }, // right button click row
+                            onMouseEnter: (event) => { }, // mouse enter row
+                            onMouseLeave: (event) => { }, // mouse leave row
+                        };
+                    }}
+                />
+                <Flex justify='flex-end' align='center' gap={"small"}>
+                    < Button onClick={() => {
+                        createNewMap()
+                        setModalBackup(false)
+                    }} variant="filled" color="default" icon={<PlusOutlined />}>
+                        New map
+                    </Button >
+                    <Upload {...uploadProps}>
+                        <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
+                    </Upload>
+                </Flex>
+            </Modal >
         </>
     );
 }
