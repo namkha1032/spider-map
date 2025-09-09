@@ -42,7 +42,8 @@ import {
     Upload,
     Layout,
     theme,
-    Tabs
+    Tabs,
+    message
 } from "antd";
 
 import {
@@ -235,7 +236,7 @@ const EdgeComp = ({ node, showEdgeForm, setShowEdgeForm }) => {
         <>
             {
                 showEdgeForm ? <Form
-                    name="basic"
+                    name={generateRandomString()}
                     wrapperCol={{ span: 24 }}
                     initialValues={{ [`edgeName ${node.nodeID}`]: node.edgeName, remember: true }}
                     onFinish={handleRenameEdge}
@@ -578,7 +579,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                     >
                         {
                             showNodeNameForm ? <Form
-                                name="basic"
+                                name={generateRandomString()}
                                 wrapperCol={{ span: 24 }}
                                 initialValues={{ [`nodeName ${node.nodeID}`]: node.nodeName, remember: true }}
                                 onFinish={handleRenameNode}
@@ -627,7 +628,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                     <Divider size='large' style={{ margin: `${antdTheme.token.paddingSM}px 0`, borderColor: antdTheme.token.colorTextQuaternary }} />
                                     {showDescriptionForm ?
                                         <Form
-                                            name="basic"
+                                            name={generateRandomString()}
                                             wrapperCol={{ span: 24 }}
                                             initialValues={{ [`nodeDescription ${node.nodeID}`]: node.nodeDescription, remember: true }}
                                             onFinish={handleRewriteDescription}
@@ -971,6 +972,34 @@ const ZoomPanWrapper = ({ children }) => {
     );
 };
 
+const OneMap = () => {
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
+    const { mapLayout, setMapLayout } = useContext(MapLayoutContext)
+    return (
+        <>
+            {
+                currentMap ?
+                    <ZoomPanWrapper>
+                        {
+                            currentMap ? <>
+                                {
+                                    mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
+                                }
+                                {
+                                    mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
+                                }
+                            </> : <></>
+                        }
+
+                    </ZoomPanWrapper > : <>
+                        <img style={{ caretColor: "transparent" }} width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`}
+                        />
+                    </>}
+        </>
+    )
+}
+
 const MindMap = () => {
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
@@ -979,17 +1008,9 @@ const MindMap = () => {
     const [expandAll, setExpandAll] = useState(false);
     const [showAll, setShowAll] = useState(false);
     const [modalNew, setModalNew] = useState(false);
-    const initialItems = [
-        { label: 'Tab 1', key: '1' },
-        { label: 'Tab 2', key: '2' },
-        {
-            label: 'Tab 3',
-            key: '3',
-            closable: false,
-        },
-    ];
-    const [mapList, setMapList] = useState(initialItems);
-
+    const [modalBackup, setModalBackup] = useState(false)
+    const [mapList, setMapList] = useState([]);
+    console.log('mapList', mapList)
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
     let layoutMargin = 18
@@ -1016,6 +1037,12 @@ const MindMap = () => {
     function createNewMap() {
         let newRoot = newNodeTemplate()
         setModalNew(false)
+        let cloneMapList = JSON.parse(JSON.stringify(mapList))
+        cloneMapList.push({
+            key: newRoot.nodeID,
+            label: newRoot.nodeName
+        })
+        setMapList(cloneMapList)
         setCurrentMap(newRoot)
     }
     const downloadJson = () => {
@@ -1030,9 +1057,16 @@ const MindMap = () => {
 
         URL.revokeObjectURL(url); // cleanup
     };
-    function loadBackup() {
-        let backupMap = JSON.parse(localStorage.getItem("backupMap"))
-        setCurrentMap(backupMap)
+    function loadBackup(mapToLoad) {
+        // let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
+        let cloneMapList = JSON.parse(JSON.stringify(mapList))
+        cloneMapList.push({
+            key: mapToLoad.nodeID,
+            label: mapToLoad.nodeName
+        })
+        setMapList(cloneMapList)
+        setCurrentMap(mapToLoad)
+        setModalBackup(false)
     }
     const uploadProps = {
         accept: ".json", // Only allow JSON files
@@ -1048,6 +1082,12 @@ const MindMap = () => {
             reader.onload = (e) => {
                 try {
                     const json = JSON.parse(e.target.result);
+                    let cloneMapList = JSON.parse(JSON.stringify(mapList))
+                    cloneMapList.push({
+                        key: json.nodeID,
+                        label: json.nodeName
+                    })
+                    setMapList(cloneMapList)
                     setCurrentMap(json)
                 } catch (err) {
 
@@ -1059,6 +1099,39 @@ const MindMap = () => {
             return false;
         },
     };
+
+    const editMapList = (targetKey, action) => {
+        if (action === 'add') {
+            setModalBackup(true)
+        } else {
+            let newActiveKey = currentMap.nodeID;
+            let lastIndex = -1;
+            mapList.forEach((item, i) => {
+                if (item.key === targetKey) {
+                    lastIndex = i - 1;
+                }
+            });
+            const newPanes = mapList.filter(item => item.key !== targetKey);
+            if (newPanes.length > 0 && newActiveKey === targetKey) {
+                if (lastIndex >= 0) {
+                    newActiveKey = newPanes[lastIndex].key;
+                } else {
+                    newActiveKey = newPanes[0].key;
+                }
+            }
+            else if (newPanes.length == 0) {
+                newActiveKey = null
+            }
+            setMapList(newPanes);
+            setCurrentMap(newActiveKey);
+        }
+    };
+    function changeActiveTab(newNodeID) {
+        let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
+        const index = backupMaps?.findIndex(obj => obj.nodeID === newNodeID);
+        console.log("backupMaps[index]", backupMaps[index])
+        setCurrentMap(backupMaps[index])
+    }
     return (
         <>
             <div className='layoutMenu' style={{
@@ -1096,10 +1169,10 @@ const MindMap = () => {
 
                         <Tabs
                             type="editable-card"
-                            // onChange={ }
-                            // activeKey={ }
-                            // onEdit={ }
-                            items={[]}
+                            onChange={changeActiveTab}
+                            activeKey={currentMap?.nodeID}
+                            onEdit={editMapList}
+                            items={mapList}
                             tabBarStyle={{
                                 margin: 0
                             }}
@@ -1124,7 +1197,7 @@ const MindMap = () => {
                                 </Button>
                             </>
                             :
-                            <Button onClick={loadBackup} variant='solid' color='default' shape="round" icon={<ReloadOutlined />}>
+                            <Button onClick={() => { setModalBackup(true) }} variant='solid' color='default' shape="round" icon={<ReloadOutlined />}>
                                 Load backup
                             </Button>}
                         <Switch
@@ -1146,28 +1219,27 @@ const MindMap = () => {
             </div>
             <div className='insideWrapper' style={{ flex: 1, width: "100%", overflowX: "hidden", overflowY: "auto", display: 'flex', justifyContent: "center", alignItems: "center" }}>
                 {currentMap ?
-                    <ZoomPanWrapper>
-                        {currentMap ? <>
-                            {
-                                mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
-                            }
-                            {
-                                mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
-                            }
-                        </> : <></>}
+                    <>
+                        {
+                            mapList.map((child, index) =>
+                                <div key={child.key} style={{ display: child?.key == currentMap?.nodeID ? "block" : "none", width: "100%", height: "100%" }}>
+                                    <ZoomPanWrapper>
+                                        {child?.key == currentMap?.nodeID ? <>
+                                            {
+                                                mapLayout == "spider" ? <SpiderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
+                                            }
+                                            {
+                                                mapLayout == "folder" ? <FolderNode node={currentMap} nodeType={"root"} childrenLength={currentMap.children.length} /> : <></>
+                                            }
+                                        </> : <></>}
 
-                    </ZoomPanWrapper> : <>
-                        {/* <style>
-                            {`
-                            @keyframes spin {
-                                0% { transform: rotate(0deg); }
-                                100% { transform: rotate(360deg); }
-                            }
-                            `}
-                        </style> */}
-                        <img style={{ caretColor: "transparent" }} width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`}
-                        // style={{ animation: "spin 20s linear infinite" }} 
-                        />
+                                    </ZoomPanWrapper>
+                                </div>
+                            )
+                        }
+
+                    </> : <>
+                        <img style={{ caretColor: "transparent" }} width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`} />
                     </>}
             </div>
             <Modal centered
@@ -1179,6 +1251,19 @@ const MindMap = () => {
             >
                 <Typography.Text>If you create a new map, the current backup map will be deleted</Typography.Text>
             </Modal>
+            <Modal centered
+                title="Backup maps"
+                // closable={{ 'aria-label': 'Custom Close Button' }}
+                open={modalBackup}
+                // onOk={loadBackup}
+                onCancel={() => { setModalBackup(false) }}
+            >
+                {JSON.parse(localStorage.getItem("backupMaps"))?.map((child, index) =>
+                    <div key={child.nodeID} onClick={() => { loadBackup(child) }}>
+                        {child.nodeName}
+                    </div>
+                )}
+            </Modal>
         </>
     );
 }
@@ -1188,7 +1273,6 @@ function App() {
     let [modeTheme, setModeTheme] = useState("light")
     let [mapLayout, setMapLayout] = useState("spider")
     const [screen, setScreen] = useState(0);
-
     useEffect(() => {
         const timerA = setTimeout(() => setScreen(1), 1000); // show B after 2s
         const timerB = setTimeout(() => setScreen(2), 4700); // show main after 4s
@@ -1200,6 +1284,7 @@ function App() {
     }, []);
     useEffect(() => {
         let modeThemeStorage = localStorage.getItem("modeTheme")
+        let backupMaps = JSON.parse(localStorage.getItem('backupMaps'))
         if (modeThemeStorage == "dark") {
             localStorage.setItem("modeTheme", "dark")
             setModeTheme("dark")
@@ -1207,6 +1292,9 @@ function App() {
         else {
             localStorage.setItem("modeTheme", "light")
             setModeTheme("light")
+        }
+        if (!backupMaps) {
+            localStorage.setItem("backupMaps", JSON.stringify([]))
         }
         const handleBeforeUnload = (event) => {
             event.preventDefault();
@@ -1221,16 +1309,25 @@ function App() {
     }, []);
     useEffect(() => {
         if (currentMap != null) {
-            localStorage.setItem('backupMap', JSON.stringify(currentMap))
+            let backupMaps = JSON.parse(localStorage.getItem('backupMaps'))
+            const index = backupMaps?.findIndex(obj => obj.nodeID === currentMap.nodeID);
+            if (index != -1) {
+                backupMaps.splice(index, 1, currentMap)
+                localStorage.setItem('backupMaps', JSON.stringify(backupMaps))
+            }
+            else {
+                backupMaps.push(currentMap)
+                localStorage.setItem('backupMaps', JSON.stringify(backupMaps))
+            }
         }
     }, [currentMap])
     return (
         <>
             <ConfigProvider theme={{
                 algorithm: modeTheme == "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
-                token: {
-                    colorPrimary: "#000000"
-                }
+                // token: {
+                //     colorPrimary: "#000000"
+                // }
             }}>
                 <ModeThemeContext.Provider value={{ modeTheme, setModeTheme }}>
                     <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
