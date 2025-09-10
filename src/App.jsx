@@ -607,7 +607,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                             </Form>
                                 :
                                 <Flex justify='space-between' align='center' gap={4}>
-                                    <Typography.Text style={{ color: "inherit" }}
+                                    <Typography.Text strong style={{ color: "inherit" }}
                                         // onClick={(e) => {
                                         //     if (e.shiftKey) {
                                         //         setShowNodeNameForm(true)
