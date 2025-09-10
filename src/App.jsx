@@ -43,9 +43,10 @@ import {
     Layout,
     theme,
     Tabs,
-    Table
+    Table,
+    Popover
 } from "antd";
-
+import styles from './App.module.css';
 import {
     presetPalettes,
     presetDarkPalettes,
@@ -54,6 +55,8 @@ import {
 const CurrentMapContext = createContext(null);
 const ModeThemeContext = createContext(null);
 const MapLayoutContext = createContext(null);
+const MapListContext = createContext(null)
+const BackupListContext = createContext(null)
 
 let radiusAmount = 12
 let cardWidth = 200
@@ -972,100 +975,11 @@ const ZoomPanWrapper = ({ children }) => {
     );
 };
 
-
-const MindMap = () => {
+const TableBackup = () => {
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
-    const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
-    const { mapLayout, setMapLayout } = useContext(MapLayoutContext)
-
-    const [expandAll, setExpandAll] = useState(false);
-    const [showAll, setShowAll] = useState(false);
-    const [modalNew, setModalNew] = useState(false);
+    const { backupList, setBackupList } = useContext(BackupListContext);
+    const { mapList, setMapList } = useContext(MapListContext);
     const [modalBackup, setModalBackup] = useState(false)
-    const [mapList, setMapList] = useState([]);
-    useEffect(() => {
-        if (currentMap) {
-            let cloneMapList = JSON.parse(JSON.stringify(mapList))
-            let index = cloneMapList.findIndex(item => item.key == currentMap.nodeID)
-            cloneMapList.splice(index, 1, {
-                key: currentMap.nodeID,
-                label: currentMap.nodeName
-            })
-            setMapList(cloneMapList)
-        }
-    }, [currentMap?.nodeName])
-    console.log('mapList', mapList)
-    let antdTheme = theme.useToken()
-    let lineColor = antdTheme.token.colorTextTertiary
-    let layoutMargin = 18
-    let tableColumn = [
-        {
-            title: 'Name',
-            dataIndex: 'nodeName',
-            key: 'nodeName',
-            render: val => <Typography.Text>{val}</Typography.Text>,
-        },
-        {
-            title: 'Description',
-            dataIndex: 'nodeDescription',
-            key: 'nodeDescription',
-            render: val => <Typography.Text>{val}</Typography.Text>,
-        }
-    ]
-    function recursiveAll(currNode, currAtt, contentToModify, conditionAtt) {
-        if (conditionAtt == null || currNode[conditionAtt] != "") {
-            currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
-        }
-        for (let child of currNode.children) {
-            recursiveAll(child, currAtt, contentToModify != null ? contentToModify : null, conditionAtt)
-        }
-    }
-    function handleExpandAll() {
-        let cloneMap = JSON.parse(JSON.stringify(currentMap))
-        recursiveAll(cloneMap, "showChildren", !expandAll)
-        setExpandAll(!expandAll)
-        setCurrentMap(cloneMap)
-    }
-    function handleShowAll() {
-        let cloneMap = JSON.parse(JSON.stringify(currentMap))
-        recursiveAll(cloneMap, "showDescription", !showAll, "nodeDescription")
-        setShowAll(!showAll)
-        setCurrentMap(cloneMap)
-    }
-    function createNewMap() {
-        let newRoot = newNodeTemplate()
-        setModalNew(false)
-        let cloneMapList = JSON.parse(JSON.stringify(mapList))
-        cloneMapList.push({
-            key: newRoot.nodeID,
-            label: newRoot.nodeName
-        })
-        setMapList(cloneMapList)
-        setCurrentMap(newRoot)
-    }
-    const downloadJson = () => {
-        const jsonString = JSON.stringify(currentMap, null, 4); // formatted JSON
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${currentMap.nodeName}.json`; // filename
-        link.click();
-
-        URL.revokeObjectURL(url); // cleanup
-    };
-    function loadBackup(mapToLoad) {
-        // let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
-        let cloneMapList = JSON.parse(JSON.stringify(mapList))
-        cloneMapList.push({
-            key: mapToLoad.nodeID,
-            label: mapToLoad.nodeName
-        })
-        setMapList(cloneMapList)
-        setCurrentMap(mapToLoad)
-        setModalBackup(false)
-    }
     const uploadProps = {
         accept: ".json", // Only allow JSON files
         showUploadList: false, // Hide default file list
@@ -1087,6 +1001,7 @@ const MindMap = () => {
                     })
                     setMapList(cloneMapList)
                     setCurrentMap(json)
+                    setModalBackup(false)
                 } catch (err) {
 
                 }
@@ -1097,7 +1012,18 @@ const MindMap = () => {
             return false;
         },
     };
-
+    function loadBackup(mapToLoad) {
+        let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
+        let index = backupMaps.findIndex(item => item.nodeID == mapToLoad.nodeID)
+        let cloneMapList = JSON.parse(JSON.stringify(mapList))
+        cloneMapList.push({
+            key: mapToLoad.nodeID,
+            label: mapToLoad.nodeName
+        })
+        setMapList(cloneMapList)
+        setCurrentMap(backupMaps[index])
+        setModalBackup(false)
+    }
     const editMapList = (targetKey, action) => {
         if (action === 'add') {
             setModalBackup(true)
@@ -1118,36 +1044,173 @@ const MindMap = () => {
                 setMapList([])
                 setCurrentMap(null)
             }
-            // fwqed qw
-            // let lastIndex = -1;
-            // mapList.forEach((item, i) => {
-            //     if (item.key === targetKey) {
-            //         lastIndex = i - 1;
-            //     }
-            // });
-            // const newPanes = mapList.filter(item => item.key !== targetKey);
-            // if (newPanes.length > 0 && newActiveKey === targetKey) {
-            //     if (lastIndex >= 0) {
-            //         newActiveKey = newPanes[lastIndex].key;
-            //     } else {
-            //         newActiveKey = newPanes[0].key;
-            //     }
-            // }
-            // else if (newPanes.length == 0) {
-            //     newActiveKey = null
-            // }
-            // setMapList(newPanes);
-            // const index = newPanes?.findIndex(obj => obj.nodeID === newActiveKey);
-            // let newMap = index != -1 ? newPanes[index] : null
-            // setCurrentMap(newMap);
         }
     };
+    function createNewMap() {
+        let newRoot = newNodeTemplate()
+        // setModalNew(false)
+        let cloneMapList = JSON.parse(JSON.stringify(mapList))
+        cloneMapList.push({
+            key: newRoot.nodeID,
+            label: newRoot.nodeName
+        })
+        setMapList(cloneMapList)
+        setCurrentMap(newRoot)
+    }
+    function deleteBackup(record) {
+        let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
+        let index = backupMaps.findIndex(item => item.nodeID == record.nodeID)
+        backupMaps.splice(index, 1)
+        localStorage.setItem("backupMaps", JSON.stringify(backupMaps))
+        let cloneBackupList = JSON.parse(JSON.stringify(backupList))
+        let index2 = cloneBackupList.findIndex(item => item.nodeID == record.nodeID)
+        cloneBackupList.splice(index, 1)
+        setBackupList(cloneBackupList)
+    }
+
     function changeActiveTab(newNodeID) {
         let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
         const index = backupMaps?.findIndex(obj => obj.nodeID === newNodeID);
-        console.log("backupMaps[index]", backupMaps[index])
         setCurrentMap(backupMaps[index])
     }
+    let tableColumn = [
+        {
+            title: 'Name',
+            dataIndex: 'nodeName',
+            key: 'nodeName',
+            width: "30%",
+            onCell: (record, rowIndex) => {
+                return {
+                    onClick: (event) => { loadBackup(record) }
+                };
+            },
+            render: val => <Typography.Text>{val}</Typography.Text>,
+        },
+        {
+            title: 'Description',
+            dataIndex: 'nodeDescription',
+            key: 'nodeDescription',
+            onCell: (record, rowIndex) => {
+                return {
+                    onClick: (event) => { loadBackup(record) }
+                };
+            },
+            ellipsis: true,
+            width: "60%",
+            render: val => <Typography.Text>{val}</Typography.Text>,
+        },
+        {
+            title: '',
+            key: 'action',
+            width: "10%",
+            render: (_, record) => (
+                <Flex justify='flex-end' align='center'>
+                    <Popover content={<>
+                        <Typography.Text>Map: </Typography.Text>
+                        <Typography.Text mark>{record.nodeName}</Typography.Text>
+                        <Typography.Paragraph>This action is irreversible</Typography.Paragraph>
+                        <Flex justify='flex-end'>
+                            <Button danger type={"primary"} icon={<DeleteOutlined />} size='small' onClick={() => { deleteBackup(record) }}>Delete</Button>
+                        </Flex>
+                    </>} title="Are you sure you want to delete this backup map?" trigger={"click"}>
+                        <Button danger type='text' icon={<DeleteOutlined />} size='small' />
+                    </Popover>
+
+                </Flex>
+            ),
+        },
+    ]
+    return <>
+        <Tabs
+            type="editable-card"
+            onChange={changeActiveTab}
+            activeKey={currentMap?.nodeID}
+            onEdit={editMapList}
+            items={mapList}
+            tabBarStyle={{
+                margin: 0
+            }}
+        />
+        <Modal centered
+            title="Open map"
+            open={modalBackup}
+            onCancel={() => { setModalBackup(false) }}
+            footer={null}
+            width={"50%"}
+            style={{ caretColor: "transparent" }}
+        >
+            <Table expandable={{ expandIcon: () => <></> }}
+                rowKey={"nodeID"}
+                columns={tableColumn}
+                dataSource={backupList}
+                onRow={(record, rowIndex) => {
+                    return {
+                        style: {
+                            cursor: "pointer"
+                        }
+                    };
+                }}
+            />
+            <Flex justify='flex-end' align='center' gap={"small"} style={{ marginTop: backupList.length > 0 ? 0 : 20 }}>
+                < Button onClick={() => {
+                    createNewMap()
+                    setModalBackup(false)
+                }} variant="filled" color="default" icon={<PlusOutlined />}>
+                    New map
+                </Button >
+                <Upload {...uploadProps}>
+                    <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
+                </Upload>
+            </Flex>
+        </Modal >
+
+    </>
+}
+
+const MindMap = () => {
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
+    const { mapLayout, setMapLayout } = useContext(MapLayoutContext);
+    const { mapList, setMapList } = useContext(MapListContext);
+
+    const [expandAll, setExpandAll] = useState(false);
+    const [showAll, setShowAll] = useState(false);
+    let antdTheme = theme.useToken()
+    let lineColor = antdTheme.token.colorTextTertiary
+    let layoutMargin = 18
+    function recursiveAll(currNode, currAtt, contentToModify, conditionAtt) {
+        if (conditionAtt == null || currNode[conditionAtt] != "") {
+            currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
+        }
+        for (let child of currNode.children) {
+            recursiveAll(child, currAtt, contentToModify != null ? contentToModify : null, conditionAtt)
+        }
+    }
+    function handleExpandAll() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveAll(cloneMap, "showChildren", !expandAll)
+        setExpandAll(!expandAll)
+        setCurrentMap(cloneMap)
+    }
+    function handleShowAll() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveAll(cloneMap, "showDescription", !showAll, "nodeDescription")
+        setShowAll(!showAll)
+        setCurrentMap(cloneMap)
+    }
+    const downloadJson = () => {
+        const jsonString = JSON.stringify(currentMap, null, 4); // formatted JSON
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${currentMap.nodeName}.json`; // filename
+        link.click();
+
+        URL.revokeObjectURL(url); // cleanup
+    };
+
     return (
         <>
             <div className='layoutMenu' style={{
@@ -1160,7 +1223,7 @@ const MindMap = () => {
 
                     <Flex align='center' style={{ height: "100%" }}>
                         <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} onClick={() => { setCurrentMap(null) }} style={{ cursor: "pointer" }} />
-                        {/* <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
+                        {currentMap ? <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} /> : <></>}
                         <Flex align='center' gap={12}>
                             {currentMap
                                 ? <>
@@ -1172,27 +1235,12 @@ const MindMap = () => {
                                     </Button>
                                 </>
                                 : <>
-                                    <Upload {...uploadProps}>
-                                        <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
-                                    </Upload>
-                                    <Button onClick={() => { setModalNew(true) }} variant="filled" color="default" icon={<PlusOutlined />}>
-                                        New map
-                                    </Button>
+
                                 </>
                             }
-                        </Flex> */}
+                        </Flex>
                         <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
-
-                        <Tabs
-                            type="editable-card"
-                            onChange={changeActiveTab}
-                            activeKey={currentMap?.nodeID}
-                            onEdit={editMapList}
-                            items={mapList}
-                            tabBarStyle={{
-                                margin: 0
-                            }}
-                        />
+                        <TableBackup />
                     </Flex>
                     <Flex gap={'small'} align='center'>
 
@@ -1213,9 +1261,8 @@ const MindMap = () => {
                                 </Button>
                             </>
                             :
-                            <Button onClick={() => { setModalBackup(true) }} variant='solid' color='default' shape="round" icon={<ReloadOutlined />}>
-                                Load backup
-                            </Button>}
+                            <></>
+                        }
                         <Switch
                             checked={modeTheme == "light"}
                             unCheckedChildren={<MoonFilled />}
@@ -1254,59 +1301,12 @@ const MindMap = () => {
                             )
                         }
 
-                    </> : <>
-                        <img style={{ caretColor: "transparent" }} width={"40%"} src={`${window.location.href}/dongson_${modeTheme}.svg`} />
-                    </>}
+                    </> : <Flex vertical align='center' justify='center' style={{ width: "100%", height: "100%", caretColor: "transparent" }}>
+                        <img style={{ caretColor: "transparent" }} width={"30%"} src={`${window.location.href}/lotr_${modeTheme}.svg`} />
+                        <Typography.Text className={styles.WandererComp} style={{ fontSize: 60 }}>not all those who wander are lost</Typography.Text>
+                    </Flex>}
             </div>
-            {/* <Modal centered
-                title="Do you want to create a new map?"
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                open={modalNew}
-                onOk={createNewMap}
-                onCancel={() => { setModalNew(false) }}
-            >
-                <Typography.Text>If you create a new map, the current backup map will be deleted</Typography.Text>
-            </Modal> */}
-            <Modal centered
-                title="Open map"
-                open={modalBackup}
-                onOk={loadBackup}
-                onCancel={() => { setModalBackup(false) }}
-                footer={null}
-            >
-                {/* {
-                    JSON.parse(localStorage.getItem("backupMaps"))?.map((child, index) =>
-                        <div key={child.nodeID} onClick={() => { loadBackup(child) }}>
-                            {child.nodeName}
-                        </div>
-                    )
-                } */}
-                <Table expandable={{ expandIcon: () => <></> }}
-                    rowKey={"nodeID"}
-                    columns={tableColumn}
-                    dataSource={JSON.parse(localStorage.getItem("backupMaps"))}
-                    onRow={(record, rowIndex) => {
-                        return {
-                            onClick: (event) => { loadBackup(record) }, // click row
-                            onDoubleClick: (event) => { }, // double click row
-                            onContextMenu: (event) => { }, // right button click row
-                            onMouseEnter: (event) => { }, // mouse enter row
-                            onMouseLeave: (event) => { }, // mouse leave row
-                        };
-                    }}
-                />
-                <Flex justify='flex-end' align='center' gap={"small"}>
-                    < Button onClick={() => {
-                        createNewMap()
-                        setModalBackup(false)
-                    }} variant="filled" color="default" icon={<PlusOutlined />}>
-                        New map
-                    </Button >
-                    <Upload {...uploadProps}>
-                        <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
-                    </Upload>
-                </Flex>
-            </Modal >
+
         </>
     );
 }
@@ -1316,6 +1316,8 @@ function App() {
     let [modeTheme, setModeTheme] = useState("light")
     let [mapLayout, setMapLayout] = useState("spider")
     const [screen, setScreen] = useState(0);
+    let [backupList, setBackupList] = useState([])
+    let [mapList, setMapList] = useState([])
     useEffect(() => {
         const timerA = setTimeout(() => setScreen(1), 1000); // show B after 2s
         const timerB = setTimeout(() => setScreen(2), 4700); // show main after 4s
@@ -1338,6 +1340,17 @@ function App() {
         }
         if (!backupMaps) {
             localStorage.setItem("backupMaps", JSON.stringify([]))
+            setBackupList([])
+        }
+        else {
+            let newBackupMaps = backupMaps.map(child => {
+                return {
+                    nodeID: child.nodeID,
+                    nodeName: child.nodeName,
+                    nodeDescription: child.nodeDescription
+                }
+            })
+            setBackupList(newBackupMaps)
         }
         const handleBeforeUnload = (event) => {
             event.preventDefault();
@@ -1364,6 +1377,25 @@ function App() {
             }
         }
     }, [currentMap])
+    useEffect(() => {
+        if (currentMap) {
+            let cloneMapList = JSON.parse(JSON.stringify(mapList))
+            let index = cloneMapList.findIndex(item => item.key == currentMap.nodeID)
+            cloneMapList.splice(index, 1, {
+                key: currentMap.nodeID,
+                label: currentMap.nodeName
+            })
+            setMapList(cloneMapList)
+        }
+    }, [currentMap?.nodeName])
+    useEffect(() => {
+        if (mapList && backupList) {
+            const mapSet = new Set(mapList.map(item => item.key));
+            let cloneBackupList = JSON.parse(localStorage.getItem("backupMaps"))
+            const newBackupList = cloneBackupList.filter(item => !mapSet.has(item.nodeID));
+            setBackupList(newBackupList)
+        }
+    }, [mapList?.length])
     return (
         <>
             <ConfigProvider theme={{
@@ -1373,41 +1405,44 @@ function App() {
                 // }
             }}>
                 <ModeThemeContext.Provider value={{ modeTheme, setModeTheme }}>
-                    <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
-                        <MapLayoutContext.Provider value={{ mapLayout, setMapLayout }}>
-                            {/* {screen != 2 ?
-                                <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                    {screen == 1 ? <img src={`${window.location.href}/logo_motion.gif`} /> : <></>}
+                    <BackupListContext.Provider value={{ backupList, setBackupList }}>
+                        <MapListContext.Provider value={{ mapList, setMapList }}>
+                            <MapLayoutContext.Provider value={{ mapLayout, setMapLayout }}>
+                                <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
+                                    {screen != 2 ?
+                                        <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                            {screen == 1 ? <img src={`${window.location.href}/logo_motion.gif`} /> : <></>}
 
-                                </div> : <></>}
-                            <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                <Layout
-                                    style={{
-                                        height: "100%",
-                                        width: "100%",
-                                        padding: 0,
-                                        scrollbarColor: "red",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
-                                    }}
-                                ><MindMap /></Layout>
-                            </div> */}
-                            <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                <Layout
-                                    style={{
-                                        height: "100%",
-                                        width: "100%",
-                                        padding: 0,
-                                        scrollbarColor: "red",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        // transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
-                                    }}
-                                ><MindMap /></Layout>
-                            </div>
-                        </MapLayoutContext.Provider>
-                    </CurrentMapContext.Provider>
+                                        </div> : <></>}
+                                    <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                        <Layout
+                                            style={{
+                                                height: "100%",
+                                                width: "100%",
+                                                padding: 0,
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
+                                            }}
+                                        ><MindMap /></Layout>
+                                    </div>
+                                    {/* <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                        <Layout
+                                            style={{
+                                                height: "100%",
+                                                width: "100%",
+                                                padding: 0,
+                                                scrollbarColor: "red",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                // transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
+                                            }}
+                                        ><MindMap /></Layout>
+                                    </div> */}
+                                </CurrentMapContext.Provider>
+                            </MapLayoutContext.Provider>
+                        </MapListContext.Provider>
+                    </BackupListContext.Provider>
                 </ModeThemeContext.Provider>
             </ConfigProvider>
         </>
