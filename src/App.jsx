@@ -91,14 +91,16 @@ function recursiveFindNode(currNode, idToModify) {
         }
     }
 }
-function recursiveModifyTree(currNode, attrModify, contentToModify) {
-    currNode[attrModify] = contentToModify != null ? contentToModify : !currNode[attrModify]
+function recursiveModifyTree(currNode, attrModify, contentToModify, conditionAtt) {
+    if (conditionAtt == null || currNode[conditionAtt] != "") {
+        currNode[attrModify] = contentToModify != null ? contentToModify : !currNode[attrModify]
+    }
     for (let childNode of currNode.children) {
-        recursiveModifyTree(childNode, attrModify, contentToModify != null ? contentToModify : null)
+        recursiveModifyTree(childNode, attrModify, contentToModify != null ? contentToModify : null, conditionAtt)
     }
 }
-function generateRandomString(length) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234569';
+function generateRandomString(length = 10) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
     const charactersLength = characters.length;
     for (let i = 0; i < length; i++) {
@@ -159,7 +161,7 @@ function handleMoveNode(id1, id2, currentMap, setCurrentMap) {
 }
 function newNodeTemplate(color) {
     return {
-        "nodeID": generateRandomString(10),
+        "nodeID": generateRandomString(),
         "nodeName": "New Node",
         "nodeDescription": "",
         "edgeName": "",
@@ -175,6 +177,12 @@ function handleExpandTree(node, currentMap, setCurrentMap) {
     recursiveModifyTree(foundNode, "showChildren", !node.showChildren)
     setCurrentMap(cloneMap)
 }
+function handleShowTree(node, currentMap, setCurrentMap) {
+    let cloneMap = JSON.parse(JSON.stringify(currentMap))
+    let foundNode = recursiveFindNode(cloneMap, node.nodeID)
+    recursiveModifyTree(foundNode, "showDescription", !node.showDescription, "nodeDescription")
+    setCurrentMap(cloneMap)
+}
 
 
 const LeftLine = ({ node, nodeType, childrenLength }) => {
@@ -186,11 +194,11 @@ const LeftLine = ({ node, nodeType, childrenLength }) => {
     let hideLeftBorder = mapLayout == "spider" && childrenLength == 1
     return (
         <>
-            <Flex className='LeftLine' align='center' style={{ width: cardWidth / 2 }}>
+            <Flex className='LeftLine' align='center' style={{ minWidth: cardWidth / 2 }}>
                 <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "100%" }}>
                     <div onClick={(e) => {
                         if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
-                            toggleShowChildren(node, currentMap, setCurrentMap)
+                            handleExpandTree(node, currentMap, setCurrentMap)
                         }
                     }} style={{
                         caretColor: "transparent", cursor: "pointer", flex: 1,
@@ -202,7 +210,7 @@ const LeftLine = ({ node, nodeType, childrenLength }) => {
                     </div>
                     <div onClick={(e) => {
                         if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
-                            toggleShowChildren(node, currentMap, setCurrentMap)
+                            handleShowTree(node, currentMap, setCurrentMap)
                         }
                     }} style={{
                         caretColor: "transparent", cursor: "pointer", flex: 1,
@@ -212,7 +220,11 @@ const LeftLine = ({ node, nodeType, childrenLength }) => {
                     }}>
                     </div>
                 </div>
-                {node.children.length > 0 ? <Button onClick={() => { handleExpandTree(node, currentMap, setCurrentMap) }} className='expandButton' icon={node.showChildren ? <DownOutlined /> : <RightOutlined />} type='text' size='small' /> : <></>}
+                {node.children.length > 0 ? <Button onClick={(e) => {
+                    if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
+                        toggleShowChildren(node, currentMap, setCurrentMap)
+                    }
+                }} className='expandButton' icon={node.showChildren ? <DownOutlined /> : <RightOutlined />} type='text' size='small' /> : <></>}
             </Flex>
         </>
     )
@@ -290,19 +302,19 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
             icon: <PlusOutlined />,
             onClick: addChild
         },
-        {
-            key: 'Description',
-            label: (
-                <Typography.Text>
-                    Description
-                </Typography.Text>
-            ),
-            icon: <EditOutlined />,
-            onClick: () => {
-                toggleShowDescription(node, currentMap, setCurrentMap)
-                setShowDescriptionForm(true)
-            }
-        },
+        // {
+        //     key: 'Description',
+        //     label: (
+        //         <Typography.Text>
+        //             Description
+        //         </Typography.Text>
+        //     ),
+        //     icon: <EditOutlined />,
+        //     onClick: () => {
+        //         toggleShowDescription(node, currentMap, setCurrentMap)
+        //         setShowDescriptionForm(true)
+        //     }
+        // },
         {
             key: 'Edge',
             label: (
@@ -607,7 +619,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                             </Form>
                                 :
                                 <Flex justify='space-between' align='center' gap={4}>
-                                    <Typography.Text strong style={{ color: "inherit" }}
+                                    <Typography.Text strong style={{ color: "inherit", flex: 1, whiteSpace: "nowrap" }}
                                         // onClick={(e) => {
                                         //     if (e.shiftKey) {
                                         //         setShowNodeNameForm(true)
@@ -616,13 +628,12 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
 
                                         onDoubleClick={() => { setShowNodeNameForm(true) }}
                                     >{node.nodeName}</Typography.Text>
-                                    {node.nodeDescription != "" ?
-                                        <Button style={{ borderWidth: 0 }} type='text' shape='circle' size='small' onClick={(e) => {
-                                            if (!e.shiftKey && !e.ctrlKey) {
-                                                toggleShowDescription(node, currentMap, setCurrentMap)
-                                            }
-                                        }} icon={<BulbOutlined />}>
-                                        </Button> : <></>}
+                                    <Button style={{ borderWidth: 0 }} type='text' shape='circle' size='small' onClick={(e) => {
+                                        if (!e.shiftKey && !e.ctrlKey) {
+                                            toggleShowDescription(node, currentMap, setCurrentMap)
+                                        }
+                                    }} icon={node.nodeDescription != "" ? <BulbOutlined /> : <></>}>
+                                    </Button>
                                 </Flex>
                         }
                         {
@@ -1409,7 +1420,7 @@ function App() {
                         <MapListContext.Provider value={{ mapList, setMapList }}>
                             <MapLayoutContext.Provider value={{ mapLayout, setMapLayout }}>
                                 <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
-                                    {screen != 2 ?
+                                    {/* {screen != 2 ?
                                         <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                             {screen == 1 ? <img src={`${window.location.href}/logo_motion.gif`} /> : <></>}
 
@@ -1425,20 +1436,19 @@ function App() {
                                                 transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
                                             }}
                                         ><MindMap /></Layout>
-                                    </div>
-                                    {/* <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                    </div> */}
+                                    <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                         <Layout
                                             style={{
                                                 height: "100%",
                                                 width: "100%",
                                                 padding: 0,
-                                                scrollbarColor: "red",
                                                 display: "flex",
                                                 flexDirection: "column",
                                                 // transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
                                             }}
                                         ><MindMap /></Layout>
-                                    </div> */}
+                                    </div>
                                 </CurrentMapContext.Provider>
                             </MapLayoutContext.Provider>
                         </MapListContext.Provider>
