@@ -278,6 +278,7 @@ const EdgeComp = ({ node, showEdgeForm, setShowEdgeForm }) => {
 
 const NodeCard = ({ node, setShowEdgeForm }) => {
     let antdTheme = theme.useToken()
+    const [form] = Form.useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
@@ -552,6 +553,41 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
         }
 
     }
+    const handlePaste = (e) => {
+        e.preventDefault();
+
+        // Get the pasted text from clipboard
+        const pastedText = e.clipboardData.getData('text');
+
+        // Remove all newlines (both \n and \r\n) and replace with spaces
+        const cleanedText = pastedText.replace(/[\r\n]+/g, ' ');
+
+        // Get current cursor position
+        const textarea = e.target;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+
+        // Get current value
+        const currentValue = textarea.value;
+
+        // Insert cleaned text at cursor position
+        const newValue = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
+
+        // Update the form field value
+        const fieldName = `nodeDescription ${node.nodeID}`;
+        form.setFieldsValue({ [fieldName]: newValue });
+
+        // Set cursor position after the pasted text
+        setTimeout(() => {
+            textarea.setSelectionRange(start + cleanedText.length, start + cleanedText.length);
+        }, 0);
+    };
+    const handleSubmitDescription = (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            form.submit();
+        }
+    };
     return (
         <>
             <Dropdown menu={{ items: contextMenuItems }} trigger={'contextMenu'}>
@@ -642,6 +678,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                     <Divider size='large' style={{ margin: `${antdTheme.token.paddingSM}px 0`, borderColor: antdTheme.token.colorTextQuaternary }} />
                                     {showDescriptionForm ?
                                         <Form
+                                            form={form}
                                             name={generateRandomString()}
                                             wrapperCol={{ span: 24 }}
                                             initialValues={{ [`nodeDescription ${node.nodeID}`]: node.nodeDescription, remember: true }}
@@ -655,7 +692,10 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                             >
                                                 <Input.TextArea autoFocus autoSize={{
                                                     maxRows: 12
-                                                }} />
+                                                }}
+                                                    onPaste={handlePaste}
+                                                    onKeyDown={handleSubmitDescription}
+                                                />
                                             </Form.Item>
                                             <Form.Item style={{ marginBottom: 0 }}>
                                                 <Flex justify='flex-end' gap={antdTheme.token.paddingSM}>
@@ -1330,13 +1370,22 @@ function App() {
     let [backupList, setBackupList] = useState([])
     let [mapList, setMapList] = useState([])
     useEffect(() => {
-        const timerA = setTimeout(() => setScreen(1), 1000); // show B after 2s
-        const timerB = setTimeout(() => setScreen(2), 4700); // show main after 4s
-
-        return () => {
-            clearTimeout(timerA);
-            clearTimeout(timerB);
+        const startTimers = () => {
+            const timerA = setTimeout(() => setScreen(1), 1000);
+            const timerB = setTimeout(() => setScreen(2), 4700);
+            return () => {
+                clearTimeout(timerA);
+                clearTimeout(timerB);
+            };
         };
+
+        if (document.readyState === 'complete') {
+            return startTimers();
+        } else {
+            const handleLoad = () => startTimers();
+            window.addEventListener('load', handleLoad);
+            return () => window.removeEventListener('load', handleLoad);
+        }
     }, []);
     useEffect(() => {
         let modeThemeStorage = localStorage.getItem("modeTheme")
@@ -1420,7 +1469,7 @@ function App() {
                         <MapListContext.Provider value={{ mapList, setMapList }}>
                             <MapLayoutContext.Provider value={{ mapLayout, setMapLayout }}>
                                 <CurrentMapContext.Provider value={{ currentMap, setCurrentMap }}>
-                                    {/* {screen != 2 ?
+                                    {screen != 2 ?
                                         <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                             {screen == 1 ? <img src={`${window.location.href}/logo_motion.gif`} /> : <></>}
 
@@ -1436,8 +1485,8 @@ function App() {
                                                 transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
                                             }}
                                         ><MindMap /></Layout>
-                                    </div> */}
-                                    <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                    </div>
+                                    {/* <div style={{ height: "100%", width: "100%", backgroundColor: "black", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                         <Layout
                                             style={{
                                                 height: "100%",
@@ -1448,7 +1497,7 @@ function App() {
                                                 // transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
                                             }}
                                         ><MindMap /></Layout>
-                                    </div>
+                                    </div> */}
                                 </CurrentMapContext.Provider>
                             </MapLayoutContext.Provider>
                         </MapListContext.Provider>
