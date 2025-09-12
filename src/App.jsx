@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import {
-    EyeOutlined,
-    EyeInvisibleOutlined,
     DownOutlined,
     RightOutlined,
     PlusOutlined,
@@ -15,16 +13,14 @@ import {
     BugOutlined,
     DownloadOutlined,
     UploadOutlined,
-    ReloadOutlined,
     BulbOutlined,
     HighlightOutlined,
-    EditOutlined,
     DeploymentUnitOutlined
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
 import remarkMath from 'remark-math'
-import 'katex/dist/katex.min.css' // `rehype-katex` does not import the CSS for you
+import 'katex/dist/katex.min.css'
 import {
     Button,
     Flex,
@@ -44,7 +40,8 @@ import {
     theme,
     Tabs,
     Table,
-    Popover
+    Popover,
+    message
 } from "antd";
 import styles from './App.module.css';
 import {
@@ -52,18 +49,14 @@ import {
     presetDarkPalettes,
     presetPrimaryColors
 } from '@ant-design/colors';
+// contexts
 const CurrentMapContext = createContext(null);
 const ModeThemeContext = createContext(null);
 const MapLayoutContext = createContext(null);
 const MapListContext = createContext(null)
 const BackupListContext = createContext(null)
 
-let radiusAmount = 12
-let cardWidth = 200
-let marginValue = 12
-let neutralLightPalletes = ["#ffffff", "#fafafa", "#f5f5f5", "#f0f0f0", "#d9d9d9", "#bfbfbf", "#8c8c8c", "#595959", "#434343", "#262626"]
-let neutralDarkPalletes = ["#262626", "#434343", "#595959", "#8c8c8c", "#bfbfbf", "#d9d9d9", "#f0f0f0", "#f5f5f5", "#fafafa", "#ffffff",]
-
+// functions
 function recursiveModify(currNode, idToModify, attrModify, contentToModify) {
     if (currNode.nodeID == idToModify) {
         currNode[attrModify] = contentToModify != null ? contentToModify : !currNode[attrModify]
@@ -100,64 +93,14 @@ function recursiveModifyTree(currNode, attrModify, contentToModify, conditionAtt
     }
 }
 function generateRandomString(length = 10) {
+    const now = new Date();
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
     const charactersLength = characters.length;
     for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
-    return result;
-}
-
-function toggleShowDescription(node, currentMap, setCurrentMap) {
-    let cloneMap = JSON.parse(JSON.stringify(currentMap))
-    recursiveModify(cloneMap, node.nodeID, "showDescription", null)
-    setCurrentMap(cloneMap)
-}
-function toggleShowChildren(node, currentMap, setCurrentMap) {
-    let cloneMap = JSON.parse(JSON.stringify(currentMap))
-    recursiveModify(cloneMap, node.nodeID, "showChildren", null)
-    setCurrentMap(cloneMap)
-}
-
-function findAndPopNode(currNode, idToFind) {
-    const index = currNode.children.findIndex(obj => obj.nodeID === idToFind);
-    if (index !== -1) {
-        return currNode.children.splice(index, 1)[0]; // removes and returns the object
-    }
-    else {
-        for (let childNode of currNode.children) {
-            let result = findAndPopNode(childNode, idToFind)
-            if (result != null) {
-                return result
-            }
-        }
-    }
-}
-
-function findAndMoveNode(currNode, nodeToMove, idToFind) {
-    const index = currNode.children.findIndex(obj => obj.nodeID === idToFind);
-    if (index !== -1) {
-        currNode.children.splice(index, 0, nodeToMove)
-        return true
-    }
-    else {
-        for (let childNode of currNode.children) {
-            let result = findAndMoveNode(childNode, nodeToMove, idToFind)
-            if (result != null) {
-                return result
-            }
-        }
-    }
-}
-
-function handleMoveNode(id1, id2, currentMap, setCurrentMap) {
-    if (id1 != currentMap.nodeID && id2 != currentMap.nodeID) {
-        let cloneMap = JSON.parse(JSON.stringify(currentMap))
-        let nodeToMove = findAndPopNode(cloneMap, id1)
-        findAndMoveNode(cloneMap, nodeToMove, id2)
-        setCurrentMap(cloneMap)
-    }
+    return `${now.toISOString()}${result}`;
 }
 function newNodeTemplate(color) {
     return {
@@ -171,17 +114,28 @@ function newNodeTemplate(color) {
         "children": []
     }
 }
+// variables
+let radiusAmount = 12
+let cardWidth = 200
+let marginValue = 24
+let neutralLightPalletes = ["#ffffff", "#fafafa", "#f5f5f5", "#f0f0f0", "#d9d9d9", "#bfbfbf", "#8c8c8c", "#595959", "#434343", "#262626"]
+let neutralDarkPalletes = ["#262626", "#434343", "#595959", "#8c8c8c", "#bfbfbf", "#d9d9d9", "#f0f0f0", "#f5f5f5", "#fafafa", "#ffffff",]
 
 
-const LeftLine = ({ node, nodeType, childrenLength }) => {
+const LeftSection = ({ node, nodeType, childrenLength }) => {
+    // contexts
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    let { mapLayout, setMapLayout } = useContext(MapLayoutContext)
+    // states
     let [showAllDescription, setShowAllDescription] = useState(node?.showDescription)
     let [showAllChildren, setShowAllChildren] = useState(node?.showChildren)
-    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    // hooks
     let antdTheme = theme.useToken()
-    let { mapLayout, setMapLayout } = useContext(MapLayoutContext)
+    // variables
     let lineColor = antdTheme.token.colorTextTertiary
     let showBorder = nodeType == "root" ? false : true
     let hideLeftBorder = mapLayout == "spider" && childrenLength == 1
+    // functions
     function handleExpandTree() {
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
         let foundNode = recursiveFindNode(cloneMap, node.nodeID)
@@ -196,11 +150,18 @@ const LeftLine = ({ node, nodeType, childrenLength }) => {
         setCurrentMap(cloneMap)
         setShowAllDescription(!showAllDescription)
     }
+
+    function toggleShowChildren() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveModify(cloneMap, node.nodeID, "showChildren", null)
+        setCurrentMap(cloneMap)
+    }
+    // component
     return (
         <>
-            <Flex className='LeftLine' align='center' style={{ minWidth: cardWidth / 2 }}>
+            <Flex className='LeftSection' align='center' style={{ minWidth: cardWidth / 2 }}>
                 <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "100%" }}>
-                    <div onClick={(e) => {
+                    <div className='borderLineTopBlock' onClick={(e) => {
                         if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
                             handleExpandTree()
                         }
@@ -212,7 +173,7 @@ const LeftLine = ({ node, nodeType, childrenLength }) => {
                     }}>
 
                     </div>
-                    <div onClick={(e) => {
+                    <div className='borderLineBottomBlock' onClick={(e) => {
                         if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
                             handleShowTree()
                         }
@@ -226,16 +187,17 @@ const LeftLine = ({ node, nodeType, childrenLength }) => {
                 </div>
                 {node.children.length > 0 ? <Button onClick={(e) => {
                     if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
-                        toggleShowChildren(node, currentMap, setCurrentMap)
+                        toggleShowChildren()
                     }
                 }} className='expandButton' icon={node.showChildren ? <DownOutlined /> : <RightOutlined />} type='text' size='small' /> : <></>}
             </Flex>
         </>
     )
 }
-
 const EdgeComp = ({ node, showEdgeForm, setShowEdgeForm }) => {
+    // contexts
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
+    // functions
     function handleRenameEdge(query) {
         const newName = query[`edgeName ${node.nodeID}`]
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
@@ -248,9 +210,10 @@ const EdgeComp = ({ node, showEdgeForm, setShowEdgeForm }) => {
             setShowEdgeForm(false)
         }
     }
-    const onFinishFailed = errorInfo => {
+    function onFinishFailed(errorInfo) {
         console.log('Failed:', errorInfo);
     };
+    // component
     return (
         <>
             {
@@ -271,7 +234,7 @@ const EdgeComp = ({ node, showEdgeForm, setShowEdgeForm }) => {
                     </Form.Item>
                 </Form>
                     :
-                    <div className='edgeform' style={{ width: "100%", padding: `0 4px`, height: "100%", display: "flex", alignItems: "flex-end" }} onDoubleClick={() => { setShowEdgeForm(true) }}>
+                    <div style={{ width: "100%", padding: `0 4px`, height: "100%", display: "flex", alignItems: "flex-end" }} onDoubleClick={() => { setShowEdgeForm(true) }}>
                         <Typography.Text style={{ fontSize: 12 }}>{node.edgeName}</Typography.Text>
 
                     </div>
@@ -279,19 +242,19 @@ const EdgeComp = ({ node, showEdgeForm, setShowEdgeForm }) => {
         </>
     )
 }
-
 const NodeCard = ({ node, setShowEdgeForm }) => {
-    let antdTheme = theme.useToken()
-    const [form] = Form.useForm();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // contexts
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
+    // states
+    const [isModalOpen, setIsModalOpen] = useState(false);
     let [showDescriptionForm, setShowDescriptionForm] = useState(false)
     let [showNodeNameForm, setShowNodeNameForm] = useState(false)
+    // hooks
+    let antdTheme = theme.useToken()
+    const [form] = Form.useForm();
+    // variables
     let lineColor = antdTheme.token.colorTextTertiary
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
     let backgroundIndex = 1
     let borderIndex = 8
     let colorPalettes = modeTheme == "light" ? presetPalettes : presetDarkPalettes
@@ -307,19 +270,6 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
             icon: <PlusOutlined />,
             onClick: addChild
         },
-        // {
-        //     key: 'Description',
-        //     label: (
-        //         <Typography.Text>
-        //             Description
-        //         </Typography.Text>
-        //     ),
-        //     icon: <EditOutlined />,
-        //     onClick: () => {
-        //         toggleShowDescription(node, currentMap, setCurrentMap)
-        //         setShowDescriptionForm(true)
-        //     }
-        // },
         {
             key: 'Edge',
             label: (
@@ -442,9 +392,10 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
             label: 'Delete',
             danger: true,
             icon: <DeleteOutlined />,
-            onClick: showModal
+            onClick: () => setIsModalOpen(true)
         },
     ];
+    // functions
     function handleRenameNode(query) {
         const newName = query[`nodeName ${node.nodeID}`]
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
@@ -533,7 +484,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
         recursiveModifyTree(foundNode, "nodeColor", `${e.key.replace("fill_", "")}`)
         setCurrentMap(cloneMap)
     }
-    const onFinishFailed = errorInfo => {
+    function onFinishFailed(errorInfo) {
         console.log('Failed:', errorInfo);
     };
     function handleEscapeNodeNameForm(e) {
@@ -552,12 +503,15 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
         e.preventDefault()
         let nodeToMoveID = e.dataTransfer.getData("currentNode")
         let currentNodeID = node.nodeID
-        if (nodeToMoveID !== currentNodeID && currentNodeID !== currentMap.nodeID) {
-            handleMoveNode(nodeToMoveID, currentNodeID, currentMap, setCurrentMap)
+        if (nodeToMoveID !== currentNodeID && currentNodeID !== currentMap.nodeID && nodeToMoveID != currentMap.nodeID && currentNodeID != currentMap.nodeID) {
+            let cloneMap = JSON.parse(JSON.stringify(currentMap))
+            let nodeToMove = recursiveFindAndPopNode(cloneMap, nodeToMoveID)
+            recursiveFindAndMoveNode(cloneMap, nodeToMove, currentNodeID)
+            setCurrentMap(cloneMap)
         }
 
     }
-    const handlePaste = (e) => {
+    function handlePaste(e) {
         e.preventDefault();
 
         // Get the pasted text from clipboard
@@ -586,12 +540,50 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
             textarea.setSelectionRange(start + cleanedText.length, start + cleanedText.length);
         }, 0);
     };
-    const handleSubmitDescription = (e) => {
+    function handleSubmitDescription(e) {
         if (e.ctrlKey && e.key === 'Enter') {
             e.preventDefault();
             form.submit();
         }
     };
+
+    function toggleShowDescription() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveModify(cloneMap, node.nodeID, "showDescription", null)
+        setCurrentMap(cloneMap)
+    }
+
+    function recursiveFindAndPopNode(currNode, idToFind) {
+        const index = currNode.children.findIndex(obj => obj.nodeID === idToFind);
+        if (index !== -1) {
+            return currNode.children.splice(index, 1)[0];
+        }
+        else {
+            for (let childNode of currNode.children) {
+                let result = recursiveFindAndPopNode(childNode, idToFind)
+                if (result != null) {
+                    return result
+                }
+            }
+        }
+    }
+
+    function recursiveFindAndMoveNode(currNode, nodeToMove, idToFind) {
+        const index = currNode.children.findIndex(obj => obj.nodeID === idToFind);
+        if (index !== -1) {
+            currNode.children.splice(index, 0, nodeToMove)
+            return true
+        }
+        else {
+            for (let childNode of currNode.children) {
+                let result = recursiveFindAndMoveNode(childNode, nodeToMove, idToFind)
+                if (result != null) {
+                    return result
+                }
+            }
+        }
+    }
+    // component
     return (
         <>
             <Dropdown menu={{ items: contextMenuItems }} trigger={'contextMenu'}>
@@ -607,7 +599,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                         size={"small"}
                         onClick={(e) => {
                             if (e.shiftKey) {
-                                addSibling()
+                                addChild()
                             }
                         }}
                         style={{
@@ -626,8 +618,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                         }}
                         styles={{
                             body: {
-                                maxHeight: 400 - antdTheme.token.paddingSM,
-                                display: 'flex', flexDirection: 'column'
+                                maxHeight: 400 - antdTheme.token.paddingSM
                             }
                         }}
 
@@ -660,17 +651,16 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                 :
                                 <Flex justify='space-between' align='center' gap={4}>
                                     <Typography.Text strong style={{ color: "inherit", flex: 1, whiteSpace: "nowrap" }}
-                                        // onClick={(e) => {
-                                        //     if (e.shiftKey) {
-                                        //         setShowNodeNameForm(true)
-                                        //     }
-                                        // }}
 
-                                        onDoubleClick={() => { setShowNodeNameForm(true) }}
+                                        onDoubleClick={(e) => {
+                                            if (!e.shiftKey) {
+                                                setShowNodeNameForm(true)
+                                            }
+                                        }}
                                     >{node.nodeName}</Typography.Text>
                                     <Button style={{ borderWidth: 0 }} type='text' shape='circle' size='small' onClick={(e) => {
                                         if (!e.shiftKey && !e.ctrlKey) {
-                                            toggleShowDescription(node, currentMap, setCurrentMap)
+                                            toggleShowDescription()
                                         }
                                     }} icon={node.nodeDescription != "" ? <BulbOutlined /> : <></>}>
                                     </Button>
@@ -714,12 +704,11 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                             </Form.Item>
                                         </Form>
                                         : <div id='outerMarkdown'
-                                            // onClick={(e) => {
-                                            //     if (e.shiftKey) {
-                                            //         setShowDescriptionForm(!showDescriptionForm)
-                                            //     }
-                                            // }}
-                                            onDoubleClick={() => { setShowDescriptionForm(true) }}
+                                            onDoubleClick={(e) => {
+                                                if (!e.shiftKey) {
+                                                    setShowDescriptionForm(true)
+                                                }
+                                            }}
                                             style={{ overflowY: "auto", flex: 1, minHeight: 22 }}>
                                             <style>
                                                 {`
@@ -755,52 +744,27 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
         </>
     )
 }
-
 const FolderNode = ({ node, nodeType, childrenLength }) => {
-    let antdTheme = theme.useToken()
-    let lineColor = antdTheme.token.colorTextTertiary
+    // states
     const [showEdgeForm, setShowEdgeForm] = useState(false)
+    // hooks
+    let antdTheme = theme.useToken()
+    // variables
+    let lineColor = antdTheme.token.colorTextTertiary
+    // component
     return (
         <>
             <div>
-                <div style={{ caretColor: "transparent", borderLeft: nodeType == 'root' ? '' : `1px solid ${lineColor}`, flex: 1, minHeight: marginValue / 2, width: cardWidth }} />
+                <div className='borderLineTopLeft' style={{ caretColor: "transparent", borderLeft: nodeType == 'root' ? '' : `1px solid ${lineColor}`, flex: 1, minHeight: marginValue / 2, width: cardWidth }} />
                 <Flex>
-                    {/* <Flex align='center' style={{ width: cardWidth / 2 }}>
-                        <div className='LeftLine' style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "100%" }}>
-                            <div onClick={(e) => {
-                                if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
-                                    toggleShowChildren(node, currentMap, setCurrentMap)
-                                }
-                            }} style={{
-                                caretColor: "transparent", cursor: "pointer", flex: 1,
-                                borderBottom: nodeType == "bot" ? `1px solid ${lineColor}` : "",
-                                borderLeft: nodeType != "root" ? `1px solid ${lineColor}` : "",
-                                borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
-                            }}>
-
-                            </div>
-                            <div onClick={(e) => {
-                                if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
-                                    toggleShowChildren(node, currentMap, setCurrentMap)
-                                }
-                            }} style={{
-                                caretColor: "transparent", cursor: "pointer", flex: 1,
-                                borderTop: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
-                                borderLeft: nodeType == "top" || nodeType == "mid" ? `1px solid ${lineColor}` : "",
-                                // borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
-                            }}>
-                            </div>
-                        </div>
-                        {node.children.length > 0 ? <Button onClick={() => { handleExpandTree(node, currentMap, setCurrentMap) }} className='expandButton' icon={node.showChildren ? <DownOutlined /> : <RightOutlined />} type='text' size='small' /> : <></>}
-                    </Flex> */}
-                    <LeftLine node={node} nodeType={nodeType} childrenLength={childrenLength} />
+                    <LeftSection node={node} nodeType={nodeType} childrenLength={childrenLength} />
                     <NodeCard node={node} setShowEdgeForm={setShowEdgeForm} />
                 </Flex>
                 {
                     node?.children?.length > 0 && node?.showChildren ?
                         <>
-                            <div style={{ paddingLeft: cardWidth, caretColor: "transparent", minHeight: marginValue, minWidth: cardWidth / 2, borderLeft: nodeType == 'root' || nodeType == 'bot' ? '' : `1px solid ${lineColor}` }}>
-                                <div className='edgeborder' style={{ borderLeft: `1px solid ${lineColor}`, minHeight: marginValue / 2 }}>
+                            <div className='borderLineLeftChildren' style={{ paddingLeft: cardWidth, caretColor: "transparent", minHeight: marginValue, minWidth: cardWidth / 2, borderLeft: nodeType == 'root' || nodeType == 'bot' ? '' : `1px solid ${lineColor}` }}>
+                                <div className='borderLineEdge' style={{ borderLeft: `1px solid ${lineColor}`, minHeight: marginValue / 2 }}>
                                     <EdgeComp node={node} showEdgeForm={showEdgeForm} setShowEdgeForm={setShowEdgeForm} />
                                 </div>
                                 {node.children.map((child, index) => {
@@ -814,50 +778,27 @@ const FolderNode = ({ node, nodeType, childrenLength }) => {
                                 <FolderNode node={node.children[node.children.length - 1]} nodeType={"bot"} childrenLength={node.children.length} />
                             </div>
                         </>
-                        : <div className="borderCheck" style={{ caretColor: "transparent", borderLeft: nodeType == 'bot' || nodeType == 'root' ? '' : `1px solid ${lineColor}`, minHeight: marginValue / 2, width: cardWidth }} />
+                        : <div className="borderLineBottomLeft" style={{ caretColor: "transparent", borderLeft: nodeType == 'bot' || nodeType == 'root' ? '' : `1px solid ${lineColor}`, minHeight: marginValue / 2, width: cardWidth }} />
                 }
             </div >
         </ >
     )
 }
-
 const SpiderNode = ({ node, nodeType, childrenLength }) => {
-    let antdTheme = theme.useToken()
+    // state
     const [showEdgeForm, setShowEdgeForm] = useState(false)
+    // hooks
+    let antdTheme = theme.useToken()
+    // variables
     let lineColor = antdTheme.token.colorTextTertiary
+    // component
     return (
         <>
             <Flex className='SpiderNode'>
-                <Flex vertical className='leftSection'>
+                <div style={{ display: "flex", flexDirection: "column" }}>
                     <div style={{ caretColor: "transparent", borderLeft: nodeType == 'top' || nodeType == 'root' || childrenLength == 1 ? "" : `1px solid ${lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
-                    <Flex className='flexTest'>
-                        {/* <Flex className='SpiderLeftLine' vertical={true} style={{ minWidth: cardWidth / 2, minHeight: "100%" }}>
-                            <div onClick={(e) => {
-                                if (!e.shiftKey && !e.ctrlKey) {
-                                    toggleShowChildren(node, currentMap, setCurrentMap)
-                                }
-                            }} style={{
-                                caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                                borderBottom: nodeType == "bot" && nodeType != "root" ? `1px solid ${lineColor}` : "",
-                                borderLeft: nodeType != "top" && childrenLength > 1 && nodeType != "root" ? `1px solid ${lineColor}` : "",
-                                borderRadius: nodeType == "bot" ? `0 0 0 ${radiusAmount}px` : ""
-                            }}>
-
-                            </div>
-                            <div onClick={(e) => {
-                                if (!e.shiftKey && !e.ctrlKey) {
-                                    toggleShowChildren(node, currentMap, setCurrentMap)
-                                }
-                            }} style={{
-                                caretColor: "transparent", cursor: "pointer", flex: 1, minWidth: cardWidth / 2,
-                                borderTop: nodeType != "bot" && nodeType != "root" ? `1px solid ${lineColor}` : "",
-                                borderLeft: nodeType != "bot" && nodeType != "root" && childrenLength > 1 ? `1px solid ${lineColor}` : "",
-                                borderRadius: nodeType == "top" ? `${radiusAmount}px 0 0 0` : ""
-                            }}>
-                            </div>
-                        </Flex> */}
-
-                        <LeftLine node={node} nodeType={nodeType} childrenLength={childrenLength} />
+                    <Flex>
+                        <LeftSection node={node} nodeType={nodeType} childrenLength={childrenLength} />
                         <NodeCard node={node} setShowEdgeForm={setShowEdgeForm} />
                         {node.children.length > 0 && node.showChildren ?
                             <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2 }}>
@@ -872,18 +813,7 @@ const SpiderNode = ({ node, nodeType, childrenLength }) => {
                             : <></>}
                     </Flex>
                     <div style={{ caretColor: "transparent", borderLeft: nodeType == 'bot' || nodeType == 'root' || childrenLength == 1 ? "" : `1px solid ${lineColor}`, flex: 1, minHeight: marginValue / 2 }} />
-                </Flex>
-                {/* {node.children.length > 0 && node.showChildren ?
-                    <Flex className='RightLine' vertical={true} style={{ minWidth: cardWidth / 2 }}>
-                        <div style={{
-                            caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, display: "flex", alignItems: "flex-end"
-                        }}>
-                            <EdgeComp node={node} showEdgeForm={showEdgeForm} setShowEdgeForm={setShowEdgeForm} />
-                        </div>
-                        <div style={{ caretColor: "transparent", flex: 1, minWidth: cardWidth / 2, borderTop: `1px solid ${lineColor}` }}>
-                        </div>
-                    </Flex>
-                    : <></>} */}
+                </div>
                 {
                     node.children.length > 0 && node.showChildren ?
                         <>
@@ -893,7 +823,6 @@ const SpiderNode = ({ node, nodeType, childrenLength }) => {
                                     <SpiderNode node={node.children[0]} nodeType={"top"} childrenLength={node.children.length} />
                                     : <></>}
                                 {/* mid child */}
-                                {/* {node.children.length > 1 ? <div style={{ caretColor: "transparent", minHeight: "100%", borderLeft: `1px solid ${lineColor}` }} /> : <></>} */}
                                 {
                                     node.children.map((child, index) => {
                                         if ((index != 0 && index != node.children.length - 1) || node.children.length == 1) {
@@ -915,14 +844,14 @@ const SpiderNode = ({ node, nodeType, childrenLength }) => {
         </>
     )
 }
-
 const ZoomPanWrapper = ({ children }) => {
+    // states
     const [zoom, setZoom] = useState(1);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    // hooks
     const containerRef = useRef(null);
-
     const handleWheel = useCallback((e) => {
         if (e.ctrlKey) {
             e.preventDefault();
@@ -947,7 +876,6 @@ const ZoomPanWrapper = ({ children }) => {
             setPan({ x: newPanX, y: newPanY });
         }
     }, [zoom, pan]);
-
     const handleMouseDown = useCallback((e) => {
         if (e.ctrlKey) {
             e.preventDefault();
@@ -958,7 +886,6 @@ const ZoomPanWrapper = ({ children }) => {
             });
         }
     }, [pan]);
-
     const handleMouseMove = useCallback((e) => {
         if (isDragging && e.ctrlKey) {
             e.preventDefault();
@@ -968,11 +895,9 @@ const ZoomPanWrapper = ({ children }) => {
             });
         }
     }, [isDragging, dragStart]);
-
     const handleMouseUp = useCallback((e) => {
         setIsDragging(false);
     }, []);
-
     const handleKeyDown = useCallback((e) => {
         if (e.ctrlKey && e.key === '0') {
             e.preventDefault();
@@ -980,7 +905,6 @@ const ZoomPanWrapper = ({ children }) => {
             setPan({ x: 0, y: 0 });
         }
     }, []);
-
     useEffect(() => {
         const container = containerRef.current;
         if (container) {
@@ -990,7 +914,6 @@ const ZoomPanWrapper = ({ children }) => {
             };
         }
     }, [handleWheel]);
-
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
@@ -1002,7 +925,7 @@ const ZoomPanWrapper = ({ children }) => {
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [handleMouseMove, handleMouseUp, handleKeyDown]);
-
+    // component
     return (
         <div
             ref={containerRef}
@@ -1027,57 +950,17 @@ const ZoomPanWrapper = ({ children }) => {
         </div>
     );
 };
-
 const TableBackup = () => {
+    // contexts
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     const { backupList, setBackupList } = useContext(BackupListContext);
     const { mapList, setMapList } = useContext(MapListContext);
+    // states
     const [modalBackup, setModalBackup] = useState(false)
-    const uploadProps = {
-        accept: ".json", // Only allow JSON files
-        showUploadList: false, // Hide default file list
-        beforeUpload: (file) => {
-            // Validate file type
-            const isJson = file.type === "application/json" || file.name.endsWith(".json");
-            if (!isJson) {
-                return Upload.LIST_IGNORE;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const json = JSON.parse(e.target.result);
-                    let cloneMapList = JSON.parse(JSON.stringify(mapList))
-                    cloneMapList.push({
-                        key: json.nodeID,
-                        label: json.nodeName
-                    })
-                    setMapList(cloneMapList)
-                    setCurrentMap(json)
-                    setModalBackup(false)
-                } catch (err) {
-
-                }
-            };
-            reader.readAsText(file);
-
-            // Prevent automatic upload
-            return false;
-        },
-    };
-    function loadBackup(mapToLoad) {
-        let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
-        let index = backupMaps.findIndex(item => item.nodeID == mapToLoad.nodeID)
-        let cloneMapList = JSON.parse(JSON.stringify(mapList))
-        cloneMapList.push({
-            key: mapToLoad.nodeID,
-            label: mapToLoad.nodeName
-        })
-        setMapList(cloneMapList)
-        setCurrentMap(backupMaps[index])
-        setModalBackup(false)
-    }
-    const editMapList = (targetKey, action) => {
+    // hooks
+    const [messageApi, contextHolder] = message.useMessage();
+    // functions
+    function editMapList(targetKey, action) {
         if (action === 'add') {
             setModalBackup(true)
         } else {
@@ -1085,7 +968,7 @@ const TableBackup = () => {
             cloneMapList = cloneMapList.filter(item => item.key !== targetKey)
             let newCurrentMap = null
             if (cloneMapList.length > 0) {
-                if (targetKey == currentMap.nodeID) {
+                if (targetKey == currentMap?.nodeID) {
                     let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
                     const index = backupMaps?.findIndex(obj => obj.nodeID === cloneMapList[0].key);
                     newCurrentMap = backupMaps[index]
@@ -1101,7 +984,6 @@ const TableBackup = () => {
     };
     function createNewMap() {
         let newRoot = newNodeTemplate()
-        // setModalNew(false)
         let cloneMapList = JSON.parse(JSON.stringify(mapList))
         cloneMapList.push({
             key: newRoot.nodeID,
@@ -1121,11 +1003,27 @@ const TableBackup = () => {
         setBackupList(cloneBackupList)
     }
 
-    function changeActiveTab(newNodeID) {
+    function changeActiveTab(key, e) {
         let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
-        const index = backupMaps?.findIndex(obj => obj.nodeID === newNodeID);
+        const index = backupMaps?.findIndex(obj => obj.nodeID === key);
         setCurrentMap(backupMaps[index])
     }
+    function loadBackup(mapToLoad) {
+        let backupMaps = JSON.parse(localStorage.getItem("backupMaps"))
+        let index = backupMaps.findIndex(item => item.nodeID == mapToLoad.nodeID)
+        let cloneMapList = JSON.parse(JSON.stringify(mapList))
+        cloneMapList.push({
+            key: mapToLoad.nodeID,
+            label: mapToLoad.nodeName
+        })
+        setMapList(cloneMapList)
+        setCurrentMap(backupMaps[index])
+        setModalBackup(false)
+        const [obj] = backupMaps.splice(index, 1)
+        backupMaps.unshift(obj)
+        localStorage.setItem("backupMaps", JSON.stringify(backupMaps))
+    }
+    // variables
     let tableColumn = [
         {
             title: 'Name',
@@ -1173,10 +1071,56 @@ const TableBackup = () => {
             ),
         },
     ]
+    const uploadProps = {
+        accept: ".json", // Only allow JSON files
+        showUploadList: false, // Hide default file list
+        beforeUpload: (file) => {
+            // Validate file type
+            const isJson = file.type === "application/json" || file.name.endsWith(".json");
+            if (!isJson) {
+                return Upload.LIST_IGNORE;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    let cloneMapList = JSON.parse(JSON.stringify(mapList))
+                    let index = cloneMapList.findIndex(item => item.key == json.nodeID)
+                    if (index == -1) {
+                        cloneMapList.push({
+                            key: json.nodeID,
+                            label: json.nodeName
+                        })
+                        setMapList(cloneMapList)
+                        setCurrentMap(json)
+                        setModalBackup(false)
+                    }
+                    else {
+                        messageApi.error(<>
+                            <Typography.Text>Map </Typography.Text>
+                            <Typography.Text mark>{cloneMapList[index]["label"]}</Typography.Text>
+                            <Typography.Text> with the same </Typography.Text>
+                            <Typography.Text code>nodeID</Typography.Text>
+                            <Typography.Text> is currently open, please close it first.</Typography.Text>
+                        </>);
+                    }
+                } catch (err) {
+
+                }
+            };
+            reader.readAsText(file);
+
+            // Prevent automatic upload
+            return false;
+        },
+    };
     return <>
+
+        {contextHolder}
         <Tabs
             type="editable-card"
-            onChange={changeActiveTab}
+            onTabClick={changeActiveTab}
             activeKey={currentMap?.nodeID}
             onEdit={editMapList}
             items={mapList}
@@ -1219,18 +1163,18 @@ const TableBackup = () => {
 
     </>
 }
-
 const MindMap = () => {
+    // contexts
     const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
     const { mapLayout, setMapLayout } = useContext(MapLayoutContext);
     const { mapList, setMapList } = useContext(MapListContext);
-
-    const [expandAll, setExpandAll] = useState(false);
-    const [showAll, setShowAll] = useState(false);
+    // hooks
     let antdTheme = theme.useToken()
+    // variables
     let lineColor = antdTheme.token.colorTextTertiary
     let layoutMargin = 18
+    // functions
     function recursiveAll(currNode, currAtt, contentToModify, conditionAtt) {
         if (conditionAtt == null || currNode[conditionAtt] != "") {
             currNode[currAtt] = contentToModify != null ? contentToModify : !currNode[currAtt]
@@ -1239,19 +1183,7 @@ const MindMap = () => {
             recursiveAll(child, currAtt, contentToModify != null ? contentToModify : null, conditionAtt)
         }
     }
-    function handleExpandAll() {
-        let cloneMap = JSON.parse(JSON.stringify(currentMap))
-        recursiveAll(cloneMap, "showChildren", !expandAll)
-        setExpandAll(!expandAll)
-        setCurrentMap(cloneMap)
-    }
-    function handleShowAll() {
-        let cloneMap = JSON.parse(JSON.stringify(currentMap))
-        recursiveAll(cloneMap, "showDescription", !showAll, "nodeDescription")
-        setShowAll(!showAll)
-        setCurrentMap(cloneMap)
-    }
-    const downloadJson = () => {
+    function downloadJson() {
         const jsonString = JSON.stringify(currentMap, null, 4); // formatted JSON
         const blob = new Blob([jsonString], { type: "application/json" });
         const url = URL.createObjectURL(blob);
@@ -1263,7 +1195,7 @@ const MindMap = () => {
 
         URL.revokeObjectURL(url); // cleanup
     };
-
+    // component
     return (
         <>
             <div className='layoutMenu' style={{
@@ -1276,7 +1208,7 @@ const MindMap = () => {
 
                     <Flex align='center' style={{ height: "100%" }}>
                         <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} onClick={() => { setCurrentMap(null) }} style={{ cursor: "pointer" }} />
-                        
+
                         <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
                         <TableBackup />
                     </Flex>
@@ -1287,7 +1219,6 @@ const MindMap = () => {
                                 <Segmented
                                     block={false}
                                     size={"large"}
-                                    // shape="round"
                                     onChange={(value) => setMapLayout(value)}
                                     options={[
                                         { value: 'spider', label: 'Spider layout', icon: <BugOutlined /> },
@@ -1339,23 +1270,27 @@ const MindMap = () => {
                             )
                         }
 
-                    </> : <Flex vertical align='center' justify='center' style={{ width: "100%", height: "100%", caretColor: "transparent" }}>
-                        <img style={{ caretColor: "transparent" }} width={"30%"} src={`${window.location.href}/lotr_${modeTheme}.svg`} />
-                        <Typography.Text className={styles.WandererComp} style={{ fontSize: 60 }}>not all those who wander are lost</Typography.Text>
+                    </> : <Flex vertical align='center' justify='space-evenly' style={{ width: "100%", height: "100%", caretColor: "transparent" }}>
+                        <img style={{ caretColor: "transparent" }} width={"27%"} src={`${window.location.href}/lotr_${modeTheme}.svg`} />
+                        <Flex vertical align='center' justify='center'>
+                            <Typography.Text className={styles.WandererComp} style={{ fontSize: 60 }}>"not all those who wander are lost"</Typography.Text>
+                            <Typography.Text className={styles.WandererComp} style={{ fontSize: 36 }}>J. R. R. Tolkien</Typography.Text>
+                        </Flex>
                     </Flex>}
             </div>
 
         </>
     );
 }
-
-function App() {
+const App = () => {
+    // states
     const [currentMap, setCurrentMap] = useState(null);
     let [modeTheme, setModeTheme] = useState("light")
     let [mapLayout, setMapLayout] = useState("spider")
     const [screen, setScreen] = useState(0);
     let [backupList, setBackupList] = useState([])
     let [mapList, setMapList] = useState([])
+    // hooks
     useEffect(() => {
         const startTimers = () => {
             const timerA = setTimeout(() => setScreen(1), 1000);
@@ -1419,7 +1354,7 @@ function App() {
                 localStorage.setItem('backupMaps', JSON.stringify(backupMaps))
             }
             else {
-                backupMaps.push(currentMap)
+                backupMaps.unshift(currentMap)
                 localStorage.setItem('backupMaps', JSON.stringify(backupMaps))
             }
         }
@@ -1443,6 +1378,7 @@ function App() {
             setBackupList(newBackupList)
         }
     }, [mapList?.length])
+    // component
     return (
         <>
             <ConfigProvider theme={{
@@ -1467,8 +1403,6 @@ function App() {
                                                 height: "100%",
                                                 width: "100%",
                                                 padding: 0,
-                                                display: "flex",
-                                                flexDirection: "column",
                                                 transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
                                             }}
                                         ><MindMap /></Layout>
@@ -1479,8 +1413,6 @@ function App() {
                                                 height: "100%",
                                                 width: "100%",
                                                 padding: 0,
-                                                display: "flex",
-                                                flexDirection: "column",
                                                 // transition: "opacity 1s ease", opacity: screen == 2 ? 1 : 0
                                             }}
                                         ><MindMap /></Layout>
@@ -1494,5 +1426,4 @@ function App() {
         </>
     );
 }
-
 export default App;
