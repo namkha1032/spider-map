@@ -15,7 +15,8 @@ import {
     UploadOutlined,
     BulbOutlined,
     HighlightOutlined,
-    DeploymentUnitOutlined
+    CoffeeOutlined,
+    ShareAltOutlined
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
@@ -55,6 +56,7 @@ const ModeThemeContext = createContext(null);
 const MapLayoutContext = createContext(null);
 const MapListContext = createContext(null)
 const BackupListContext = createContext(null)
+import demo_json from "./data/demo.json"
 
 // functions
 function recursiveModify(currNode, idToModify, attrModify, contentToModify) {
@@ -252,7 +254,8 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
     let [showNodeNameForm, setShowNodeNameForm] = useState(false)
     // hooks
     let antdTheme = theme.useToken()
-    const [form] = Form.useForm();
+    const [form1] = Form.useForm();
+    const [form2] = Form.useForm();
     // variables
     let lineColor = antdTheme.token.colorTextTertiary
     let backgroundIndex = 1
@@ -277,7 +280,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                     Edge
                 </Typography.Text>
             ),
-            icon: <DeploymentUnitOutlined />,
+            icon: <ShareAltOutlined />,
             onClick: () => {
                 setShowEdgeForm(true)
             }
@@ -487,9 +490,13 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
     function onFinishFailed(errorInfo) {
         console.log('Failed:', errorInfo);
     };
-    function handleEscapeNodeNameForm(e) {
+    function handleKeyDownNodeName(e) {
         if (e.key === "Escape") {
             setShowNodeNameForm(false)
+        }
+        else if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            form1.submit();
         }
     }
     function handleDragStart(e) {
@@ -511,14 +518,14 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
         }
 
     }
-    function handlePaste(e) {
+    function handlePaste(e, form, formName) {
         e.preventDefault();
 
         // Get the pasted text from clipboard
         const pastedText = e.clipboardData.getData('text');
 
         // Remove all newlines (both \n and \r\n) and replace with spaces
-        const cleanedText = pastedText.replace(/[\r\n]+/g, ' ');
+        const cleanedText = formName == "nodeName" ? pastedText.toLowerCase() : pastedText.replace(/[\r\n]+/g, ' ')
 
         // Get current cursor position
         const textarea = e.target;
@@ -532,7 +539,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
         const newValue = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
 
         // Update the form field value
-        const fieldName = `nodeDescription ${node.nodeID}`;
+        const fieldName = `${formName} ${node.nodeID}`;
         form.setFieldsValue({ [fieldName]: newValue });
 
         // Set cursor position after the pasted text
@@ -543,7 +550,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
     function handleSubmitDescription(e) {
         if (e.ctrlKey && e.key === 'Enter') {
             e.preventDefault();
-            form.submit();
+            form2.submit();
         }
     };
 
@@ -587,7 +594,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
     return (
         <>
             <Dropdown menu={{ items: contextMenuItems }} trigger={'contextMenu'}>
-                <div draggable={!node.showDescription}
+                <div draggable={!node.showDescription && !showNodeNameForm}
                     onDragStart={handleDragStart}
                     onDragOver={preventDragDefault}
                     onDragEnter={preventDragDefault}
@@ -625,6 +632,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                     >
                         {
                             showNodeNameForm ? <Form
+                                form={form1}
                                 name={generateRandomString()}
                                 wrapperCol={{ span: 24 }}
                                 initialValues={{ [`nodeName ${node.nodeID}`]: node.nodeName, remember: true }}
@@ -636,7 +644,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                         name={`nodeName ${node.nodeID}`}
                                         style={{ marginBottom: 0, width: "100%" }}
                                     >
-                                        <Input autoFocus onKeyDown={handleEscapeNodeNameForm} />
+                                        <Input autoFocus onKeyDown={handleKeyDownNodeName} onPaste={(e) => handlePaste(e, form1, "nodeName")} />
                                     </Form.Item>
                                     {node.showDescription ? <Form.Item style={{ marginBottom: 0 }}>
                                         <Button onClick={() => { setShowNodeNameForm(false) }} icon={<CloseOutlined />} />
@@ -672,7 +680,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                     <Divider size='large' style={{ margin: `${antdTheme.token.paddingSM}px 0`, borderColor: antdTheme.token.colorTextQuaternary }} />
                                     {showDescriptionForm ?
                                         <Form
-                                            form={form}
+                                            form={form2}
                                             name={generateRandomString()}
                                             wrapperCol={{ span: 24 }}
                                             initialValues={{ [`nodeDescription ${node.nodeID}`]: node.nodeDescription, remember: true }}
@@ -687,7 +695,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                                 <Input.TextArea autoFocus autoSize={{
                                                     maxRows: 12
                                                 }}
-                                                    onPaste={handlePaste}
+                                                    onPaste={(e) => handlePaste(e, form2, "nodeDescription")}
                                                     onKeyDown={handleSubmitDescription}
                                                 />
                                             </Form.Item>
@@ -1023,6 +1031,28 @@ const TableBackup = () => {
         backupMaps.unshift(obj)
         localStorage.setItem("backupMaps", JSON.stringify(backupMaps))
     }
+    function loadDemo() {
+        let cloneMapList = JSON.parse(JSON.stringify(mapList))
+        let index = cloneMapList.findIndex(item => item.key == demo_json.nodeID)
+        if (index == -1) {
+            cloneMapList.push({
+                key: demo_json.nodeID,
+                label: demo_json.nodeName
+            })
+            setMapList(cloneMapList)
+            setCurrentMap(demo_json)
+            setModalBackup(false)
+        }
+        else {
+            messageApi.error(<>
+                <Typography.Text>Map </Typography.Text>
+                <Typography.Text mark>{cloneMapList[index]["label"]}</Typography.Text>
+                <Typography.Text> with the same </Typography.Text>
+                <Typography.Text code>nodeID</Typography.Text>
+                <Typography.Text> is currently open, please close it first.</Typography.Text>
+            </>);
+        }
+    }
     // variables
     let tableColumn = [
         {
@@ -1148,16 +1178,19 @@ const TableBackup = () => {
                     };
                 }}
             />
-            <Flex justify='flex-end' align='center' gap={"small"} style={{ marginTop: backupList.length > 0 ? 0 : 20 }}>
-                < Button onClick={() => {
-                    createNewMap()
-                    setModalBackup(false)
-                }} variant="filled" color="default" icon={<PlusOutlined />}>
-                    New map
-                </Button >
-                <Upload {...uploadProps}>
-                    <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
-                </Upload>
+            <Flex justify='space-between' style={{ marginTop: backupList.length > 0 ? 0 : 20 }}>
+                < Button onClick={loadDemo} variant="filled" color="default" icon={<CoffeeOutlined />}>Load demo</Button>
+                <Flex justify='flex-end' align='center' gap={"small"}>
+                    < Button onClick={() => {
+                        createNewMap()
+                        setModalBackup(false)
+                    }} variant="filled" color="default" icon={<PlusOutlined />}>
+                        New map
+                    </Button >
+                    <Upload {...uploadProps}>
+                        <Button variant='solid' color='default' icon={<UploadOutlined />}>Upload</Button>
+                    </Upload>
+                </Flex>
             </Flex>
         </Modal >
 

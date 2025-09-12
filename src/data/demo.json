@@ -1,0 +1,983 @@
+{
+    "nodeID": "namkha",
+    "nodeName": "multimodal foundation",
+    "nodeDescription": "Liang, P.P., Zadeh, A. and Morency, L.P., 2024. Foundations & trends in multimodal machine learning: Principles, challenges, and open questions. ACM Computing Surveys, 56(10), pp.1-42.\n",
+    "edgeName": "",
+    "nodeColor": "neutral",
+    "showDescription": true,
+    "showChildren": true,
+    "children": [
+        {
+            "nodeID": "S3wM9aXJlp",
+            "nodeName": "Principles",
+            "nodeDescription": "",
+            "edgeName": "",
+            "nodeColor": "neutral",
+            "showDescription": false,
+            "showChildren": true,
+            "children": [
+                {
+                    "nodeID": "BuNt9TooNd",
+                    "nodeName": "Heterogeneous",
+                    "nodeDescription": "",
+                    "edgeName": "dimension",
+                    "nodeColor": "neutral",
+                    "showDescription": false,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "qHuOadOmmz",
+                            "nodeName": "representation",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "neutral",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "nGJlR3kgvA",
+                            "nodeName": "distribution",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "neutral",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "LlooaxIBbj",
+                            "nodeName": "structure",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "neutral",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "mvknsJMDOI",
+                            "nodeName": "information",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "neutral",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "XUTqCAuYhi",
+                            "nodeName": "noise",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "neutral",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "r3QF6jlcSk",
+                            "nodeName": "relevance",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "neutral",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "nodeID": "yEU1fwuz4m",
+                    "nodeName": "Connected",
+                    "nodeDescription": "Although modalities are heterogeneous, they are often connected due to **shared complementary** information. The presence of shared information is often in contrast to unique information that exists solely in a single modality\n- bottom-up: statistical\n- top-down: semantic",
+                    "edgeName": "",
+                    "nodeColor": "red",
+                    "showDescription": true,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "Ai6CT9dxAa",
+                            "nodeName": " Statistical association",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "red",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "lAGCkHY3uq",
+                            "nodeName": "Statistical dependence",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "red",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "PZYtZqrk1H",
+                            "nodeName": "Semantic correspondence",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "red",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "nQWCasDzfz",
+                            "nodeName": "Semantic relations",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "red",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "nodeID": "Dc6qHO0Cvh",
+                    "nodeName": "Interacted",
+                    "nodeDescription": "how modality elements interact to give rise to new information when integrated together for task inference\n\nDifference between connection and interaction:\n- connections exist within multimodal data itself,\n- interactions only arise when modalities are integrated and processed together to bring a new response",
+                    "edgeName": "dimension",
+                    "nodeColor": "orange",
+                    "showDescription": true,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "bnBCn4XH49",
+                            "nodeName": "information",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "orange",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "5BioUGp3VC",
+                                    "nodeName": "redundant",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "orange",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "sGgqFVUQ0q",
+                                    "nodeName": "non-redundant",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "orange",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "naJ20eKoYI",
+                            "nodeName": "mechanics",
+                            "nodeDescription": "the functional operators involved when integrating modality elements for task inference",
+                            "edgeName": "",
+                            "nodeColor": "orange",
+                            "showDescription": true,
+                            "showChildren": true,
+                            "children": []
+                        },
+                        {
+                            "nodeID": "OTHvUisTgS",
+                            "nodeName": "response",
+                            "nodeDescription": " how the inferred response changes in the presence of multiple modalities",
+                            "edgeName": "",
+                            "nodeColor": "orange",
+                            "showDescription": true,
+                            "showChildren": true,
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "nodeID": "CznkVXCfM3",
+            "nodeName": "Challenges",
+            "nodeDescription": "",
+            "edgeName": "",
+            "nodeColor": "neutral",
+            "showDescription": false,
+            "showChildren": true,
+            "children": [
+                {
+                    "nodeID": "T25n2mSWJi",
+                    "nodeName": "Representation",
+                    "nodeDescription": "learn representations that reflect **cross-modal interactions** between **individual elements** across different modalities",
+                    "edgeName": "",
+                    "nodeColor": "yellow",
+                    "showDescription": true,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "2skpgo56XK",
+                            "nodeName": "representation fusion",
+                            "nodeDescription": "integrating information from 2 or more modalities, effectively **reducing the number of separate representations**",
+                            "edgeName": "",
+                            "nodeColor": "yellow",
+                            "showDescription": true,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "GhdxvSmyKb",
+                                    "nodeName": "abstract modalities",
+                                    "nodeDescription": "unimodal encoders first capture a holistic representation of each element before fusion at relatively homogeneous representations -->  **late fusion**",
+                                    "edgeName": "",
+                                    "nodeColor": "yellow",
+                                    "showDescription": true,
+                                    "showChildren": true,
+                                    "children": [
+                                        {
+                                            "nodeID": "K6eyCUvY1T",
+                                            "nodeName": "additive",
+                                            "nodeDescription": "Given unimodal data or features x1 and x2, additive fusion can be seen as learning a new joint representation\n\n$$Z_{mm} = w_0 + w_1 x_1 + w_2 x_2 + \\epsilon$$\n\nIf the joint representation Zmm is directly taken as a prediction yˆ, then additive fusion resembles late or ensemble fusion\n\n$$\\hat{y} = f_1(x_1) + f_2(x_2)$$\n\nwith unimodal predictors $f_1$ and $f_2$",
+                                            "edgeName": "",
+                                            "nodeColor": "yellow",
+                                            "showDescription": true,
+                                            "showChildren": true,
+                                            "children": []
+                                        },
+                                        {
+                                            "nodeID": "YQfXRHTRli",
+                                            "nodeName": "multiplicative",
+                                            "nodeDescription": "",
+                                            "edgeName": "",
+                                            "nodeColor": "yellow",
+                                            "showDescription": false,
+                                            "showChildren": true,
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "nodeID": "wEdtbIIPh1",
+                                    "nodeName": "raw modalities",
+                                    "nodeDescription": "entails representation fusion at very early stages, perhaps directly involving heterogeneous raw modalities --> **early fusion**",
+                                    "edgeName": "",
+                                    "nodeColor": "yellow",
+                                    "showDescription": true,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "eeLMckLvnY",
+                            "nodeName": "representation coordination",
+                            "nodeDescription": "interchanging cross-modal information with the goal of **keeping the same number of representations** but improving multimodal contextualization",
+                            "edgeName": "",
+                            "nodeColor": "yellow",
+                            "showDescription": true,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "EadXpFkTvE",
+                                    "nodeName": "strong coordination",
+                                    "nodeDescription": "bring semantically corresponding modalities close together in a coordinated space, while pushing unrelevant modalities far away",
+                                    "edgeName": "",
+                                    "nodeColor": "yellow",
+                                    "showDescription": true,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "VzMXwncn6P",
+                                    "nodeName": "partial coordination",
+                                    "nodeDescription": "captures more general modality connections such as correlation, order, hierarchies, or relationships",
+                                    "edgeName": "",
+                                    "nodeColor": "yellow",
+                                    "showDescription": true,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "zrmxIq12ZM",
+                            "nodeName": "representation fission",
+                            "nodeDescription": "- creating a new decoupled set of representations, usually **larger number than the input set**, that reflects knowledge about internal structure such as data clustering or factorization\n\n- enables careful interpretation and fine-grained controllability",
+                            "edgeName": "",
+                            "nodeColor": "yellow",
+                            "showDescription": true,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "TqCD3iIjxW",
+                                    "nodeName": "modality-level fission",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "yellow",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "1zDOZhM44S",
+                                    "nodeName": "fine-grained fission",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "yellow",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "nodeID": "bTvuAe6udV",
+                    "nodeName": "Alignment",
+                    "nodeDescription": "- identify cross-modal **connections** and **interactions** between elements of multiple modalities\n- Alignment between modalities is challenging since it may:\n\t- depend on long-range dependencies,\n\t- involves ambiguous segmentation (e.g., words or utterances)\n\t- could be either one-to-one, many-to-many, or not exist at all",
+                    "edgeName": "",
+                    "nodeColor": "green",
+                    "showDescription": true,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "igHLjDy3dZ",
+                            "nodeName": "discrete alignment",
+                            "nodeDescription": "identifying connections between discrete elements across modalities",
+                            "edgeName": "",
+                            "nodeColor": "green",
+                            "showDescription": true,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "5R6q3Wtcq6",
+                                    "nodeName": "local alignment",
+                                    "nodeDescription": "discover connections between a given matching pair of modality elements\n\n- particularly suitable for multimodal tasks where there is **clear segmentation into discrete elements** such as words in text or object bounding boxes in images or videos",
+                                    "edgeName": "",
+                                    "nodeColor": "green",
+                                    "showDescription": true,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "HS4xKs0AN6",
+                                    "nodeName": "global alignment",
+                                    "nodeDescription": "alignment must be performed globally to learn both the **connections** and **matchings**",
+                                    "edgeName": "",
+                                    "nodeColor": "green",
+                                    "showDescription": true,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "no2CaQb2Yc",
+                            "nodeName": "continuous alignment",
+                            "nodeDescription": "modeling alignment between continuous modality signals with ambiguous segmentation",
+                            "edgeName": "",
+                            "nodeColor": "green",
+                            "showDescription": true,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:03:54.040ZQ2TGlfDpXv",
+                                    "nodeName": "continuous warping",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "green",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:04:02.887ZIcMyab07Ly",
+                                    "nodeName": "modality segmentation",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "green",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "Dl1NKZP5PJ",
+                            "nodeName": "contextualized representations",
+                            "nodeDescription": "learning better multimodal representations by capturing cross-modal interactions between elements",
+                            "edgeName": "",
+                            "nodeColor": "green",
+                            "showDescription": true,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:07:15.533Zt2zqlhNZYV",
+                                    "nodeName": "joint undirected alignment",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "green",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:07:34.197ZsjTnZJyEDy",
+                                    "nodeName": "cross-modal directed alignment",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "green",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:07:58.069ZzMPz9dfKKL",
+                                    "nodeName": "graphical alignment",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "green",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "nodeID": "muVMJIfbJH",
+                    "nodeName": "Reasoning",
+                    "nodeDescription": "",
+                    "edgeName": "",
+                    "nodeColor": "cyan",
+                    "showDescription": false,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "2025-09-12T06:08:50.204ZnlPIxo1mUx",
+                            "nodeName": "structure modeling",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "cyan",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:09:57.548ZVxzQohKYyj",
+                                    "nodeName": "hierarchical structure ",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:09:58.121ZokpE8scNl8",
+                                    "nodeName": "temporal structure",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:09:59.144ZeUE1ALMdbk",
+                                    "nodeName": "interactive structure",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:11:22.181ZhEEMpjOl7f",
+                                    "nodeName": "structure discovery",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:09:03.602ZXoUub8btcf",
+                            "nodeName": "intermediate concepts",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "cyan",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:14:18.463ZRpG6tVpcwb",
+                                    "nodeName": "attention maps",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:14:18.640ZGGuDBaYCIN",
+                                    "nodeName": "discrete symbols",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:14:19.608Zskq56u86vK",
+                                    "nodeName": "language as a medium",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:09:04.783Zt8OYUVt6WP",
+                            "nodeName": "inference paradigm",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "cyan",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:15:33.557Z6ZClOSvsoh",
+                                    "nodeName": "logical inference",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:15:38.933Z1ygZgPAgqJ",
+                                    "nodeName": "causal inference",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:09:04.940Ztl1epz1aEq",
+                            "nodeName": "external knowledge",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "cyan",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:16:14.810ZhLIxLQ99P9",
+                                    "nodeName": "multimodal knowledge graphs",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:16:15.092ZFxpVrD3KsO",
+                                    "nodeName": "multimodal commonsense reasoning ",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "cyan",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "nodeID": "j2Gq4IC9Hk",
+                    "nodeName": "Generation",
+                    "nodeDescription": "",
+                    "edgeName": "",
+                    "nodeColor": "blue",
+                    "showDescription": false,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "2025-09-12T06:18:35.730ZaeFbv4nFd6",
+                            "nodeName": "summarization",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "blue",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:20:02.153ZboUGaeTabD",
+                                    "nodeName": "extractive approach",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "blue",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:20:02.627ZOYtO00NEtx",
+                                    "nodeName": "abstractive approach",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "blue",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:18:35.942ZmiSuJtGlKw",
+                            "nodeName": "translation",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "blue",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:21:04.210ZPGxjBXlb29",
+                                    "nodeName": "exemplar-based",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "blue",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:21:04.591ZMxaKAk6oPi",
+                                    "nodeName": "generative models ",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "blue",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:18:36.451ZM1TnHNrpcU",
+                            "nodeName": "creation",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "blue",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:25:51.459Z5Oz0D4tcic",
+                                    "nodeName": "conditional",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "blue",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:25:51.755Z4TfTUQJ6iI",
+                                    "nodeName": "synchronized",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "blue",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:25:52.280ZuWxCoWW2DB",
+                                    "nodeName": "stochastic",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "blue",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:27:17.907ZtR26hlG1aR",
+                                    "nodeName": "auto-regressive across possibly long ranges",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "blue",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "nodeID": "yFIaXxjauM",
+                    "nodeName": "Transference",
+                    "nodeDescription": "",
+                    "edgeName": "",
+                    "nodeColor": "purple",
+                    "showDescription": false,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "2025-09-12T06:28:32.090ZudoE1AJdiy",
+                            "nodeName": "cross-modal transfer",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "purple",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:29:21.319ZfAXYz4jERs",
+                                    "nodeName": "tuning",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "purple",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:29:21.591ZTyLH22hxry",
+                                    "nodeName": "multitask learning",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "purple",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:29:22.276ZLEuk0xZett",
+                                    "nodeName": "transfer learning",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "purple",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:28:32.505ZBabJqwbm7t",
+                            "nodeName": "multimodal co-learning",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "purple",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:30:13.745ZkgiYjDeAlD",
+                                    "nodeName": "via representation",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "purple",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:30:14.006Z7anNoxcFh2",
+                                    "nodeName": "via generation",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "purple",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:28:33.035Zy6agRvxc9q",
+                            "nodeName": "model induction ",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "purple",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:31:19.570ZHyemMy0Fmq",
+                                    "nodeName": "co-training",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "purple",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:31:19.808ZHrzvuDQafy",
+                                    "nodeName": "co-regularization",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "purple",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "nodeID": "02jtxUb6OI",
+                    "nodeName": "Quantification",
+                    "nodeDescription": "",
+                    "edgeName": "",
+                    "nodeColor": "magenta",
+                    "showDescription": false,
+                    "showChildren": true,
+                    "children": [
+                        {
+                            "nodeID": "2025-09-12T06:32:08.690ZkXUpBzqw8E",
+                            "nodeName": "dimensions of heterogeneity",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "magenta",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:32:38.018Z1L75rP8yd0",
+                                    "nodeName": "modality information",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "magenta",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:32:38.282ZWAGHAf0AHr",
+                                    "nodeName": "modality biases ",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "magenta",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:33:05.787Z5Li3ysvgUe",
+                                    "nodeName": "modality noise topologies and robustness",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "magenta",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:32:08.947Z3rX7FEThhU",
+                            "nodeName": "modality interconnections",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "magenta",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:34:54.540ZdXK0ED2DKw",
+                                    "nodeName": "connections",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "magenta",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:34:54.707ZRc4jBmAuYp",
+                                    "nodeName": "interactions",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "magenta",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "nodeID": "2025-09-12T06:32:10.073ZfM86wyNRW4",
+                            "nodeName": "learning and optimization",
+                            "nodeDescription": "",
+                            "edgeName": "",
+                            "nodeColor": "magenta",
+                            "showDescription": false,
+                            "showChildren": true,
+                            "children": [
+                                {
+                                    "nodeID": "2025-09-12T06:35:33.217ZhUS2cNRQ6c",
+                                    "nodeName": "generalization",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "magenta",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:35:33.431ZZZ5zonGi1Y",
+                                    "nodeName": "optimization",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "magenta",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                },
+                                {
+                                    "nodeID": "2025-09-12T06:35:34.442ZIi5baWvI1v",
+                                    "nodeName": "tradeoffs",
+                                    "nodeDescription": "",
+                                    "edgeName": "",
+                                    "nodeColor": "magenta",
+                                    "showDescription": false,
+                                    "showChildren": true,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
