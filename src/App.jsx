@@ -171,34 +171,38 @@ function newNodeTemplate(color) {
         "children": []
     }
 }
-function handleExpandTree(node, currentMap, setCurrentMap) {
-    let cloneMap = JSON.parse(JSON.stringify(currentMap))
-    let foundNode = recursiveFindNode(cloneMap, node.nodeID)
-    recursiveModifyTree(foundNode, "showChildren", !node.showChildren)
-    setCurrentMap(cloneMap)
-}
-function handleShowTree(node, currentMap, setCurrentMap) {
-    let cloneMap = JSON.parse(JSON.stringify(currentMap))
-    let foundNode = recursiveFindNode(cloneMap, node.nodeID)
-    recursiveModifyTree(foundNode, "showDescription", !node.showDescription, "nodeDescription")
-    setCurrentMap(cloneMap)
-}
 
 
 const LeftLine = ({ node, nodeType, childrenLength }) => {
+    let [showAllDescription, setShowAllDescription] = useState(node?.showDescription)
+    let [showAllChildren, setShowAllChildren] = useState(node?.showChildren)
+    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     let antdTheme = theme.useToken()
     let { mapLayout, setMapLayout } = useContext(MapLayoutContext)
     let lineColor = antdTheme.token.colorTextTertiary
-    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     let showBorder = nodeType == "root" ? false : true
     let hideLeftBorder = mapLayout == "spider" && childrenLength == 1
+    function handleExpandTree() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        let foundNode = recursiveFindNode(cloneMap, node.nodeID)
+        recursiveModifyTree(foundNode, "showChildren", !showAllChildren)
+        setCurrentMap(cloneMap)
+        setShowAllChildren(!showAllChildren)
+    }
+    function handleShowTree() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        let foundNode = recursiveFindNode(cloneMap, node.nodeID)
+        recursiveModifyTree(foundNode, "showDescription", !showAllDescription, "nodeDescription")
+        setCurrentMap(cloneMap)
+        setShowAllDescription(!showAllDescription)
+    }
     return (
         <>
             <Flex className='LeftLine' align='center' style={{ minWidth: cardWidth / 2 }}>
                 <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "100%" }}>
                     <div onClick={(e) => {
                         if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
-                            handleExpandTree(node, currentMap, setCurrentMap)
+                            handleExpandTree()
                         }
                     }} style={{
                         caretColor: "transparent", cursor: "pointer", flex: 1,
@@ -210,7 +214,7 @@ const LeftLine = ({ node, nodeType, childrenLength }) => {
                     </div>
                     <div onClick={(e) => {
                         if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
-                            handleShowTree(node, currentMap, setCurrentMap)
+                            handleShowTree()
                         }
                     }} style={{
                         caretColor: "transparent", cursor: "pointer", flex: 1,
@@ -756,7 +760,6 @@ const FolderNode = ({ node, nodeType, childrenLength }) => {
     let antdTheme = theme.useToken()
     let lineColor = antdTheme.token.colorTextTertiary
     const [showEdgeForm, setShowEdgeForm] = useState(false)
-    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     return (
         <>
             <div>
@@ -820,7 +823,6 @@ const FolderNode = ({ node, nodeType, childrenLength }) => {
 
 const SpiderNode = ({ node, nodeType, childrenLength }) => {
     let antdTheme = theme.useToken()
-    const { currentMap, setCurrentMap } = useContext(CurrentMapContext);
     const [showEdgeForm, setShowEdgeForm] = useState(false)
     let lineColor = antdTheme.token.colorTextTertiary
     return (
@@ -1274,22 +1276,7 @@ const MindMap = () => {
 
                     <Flex align='center' style={{ height: "100%" }}>
                         <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} onClick={() => { setCurrentMap(null) }} style={{ cursor: "pointer" }} />
-                        {currentMap ? <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} /> : <></>}
-                        <Flex align='center' gap={12}>
-                            {currentMap
-                                ? <>
-                                    <Button onClick={handleExpandAll} variant="filled" color='default' shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
-                                        {expandAll ? "Collapse all" : "Expand all"}
-                                    </Button>
-                                    <Button onClick={handleShowAll} variant="filled" color='default' shape="default" icon={showAll ? <EyeInvisibleOutlined /> : <EyeOutlined />}>
-                                        {showAll ? "Hide all" : "Show all"}
-                                    </Button>
-                                </>
-                                : <>
-
-                                </>
-                            }
-                        </Flex>
+                        
                         <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
                         <TableBackup />
                     </Flex>
