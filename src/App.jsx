@@ -606,7 +606,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                         size={"small"}
                         onClick={(e) => {
                             if (e.shiftKey) {
-                                addChild()
+                                addSibling()
                             }
                         }}
                         style={{
