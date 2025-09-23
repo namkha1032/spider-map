@@ -16,7 +16,9 @@ import {
     BulbOutlined,
     HighlightOutlined,
     CoffeeOutlined,
-    ShareAltOutlined
+    ShareAltOutlined,
+    EyeOutlined,
+    EyeInvisibleOutlined 
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
@@ -907,7 +909,7 @@ const ZoomPanWrapper = ({ children }) => {
         setIsDragging(false);
     }, []);
     const handleKeyDown = useCallback((e) => {
-        if (e.ctrlKey && e.key === '0') {
+        if (e.ctrlKey && e.key === 'r') {
             e.preventDefault();
             setZoom(1);
             setPan({ x: 0, y: 0 });
@@ -1202,6 +1204,8 @@ const MindMap = () => {
     const { modeTheme, setModeTheme } = useContext(ModeThemeContext);
     const { mapLayout, setMapLayout } = useContext(MapLayoutContext);
     const { mapList, setMapList } = useContext(MapListContext);
+    const [expandAll, setExpandAll] = useState(false);
+    const [showAll, setShowAll] = useState(false);
     // hooks
     let antdTheme = theme.useToken()
     // variables
@@ -1215,6 +1219,18 @@ const MindMap = () => {
         for (let child of currNode.children) {
             recursiveAll(child, currAtt, contentToModify != null ? contentToModify : null, conditionAtt)
         }
+    }
+    function handleExpandAll() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveAll(cloneMap, "showChildren", !expandAll)
+        setExpandAll(!expandAll)
+        setCurrentMap(cloneMap)
+    }
+    function handleShowAll() {
+        let cloneMap = JSON.parse(JSON.stringify(currentMap))
+        recursiveAll(cloneMap, "showDescription", !showAll, "nodeDescription")
+        setShowAll(!showAll)
+        setCurrentMap(cloneMap)
     }
     function downloadJson() {
         const jsonString = JSON.stringify(currentMap, null, 4); // formatted JSON
@@ -1241,7 +1257,22 @@ const MindMap = () => {
 
                     <Flex align='center' style={{ height: "100%" }}>
                         <img height={24} src={`${window.location.href}/logo_${modeTheme}.png`} onClick={() => { setCurrentMap(null) }} style={{ cursor: "pointer" }} />
+                        {currentMap ? <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} /> : <></>}
+                        <Flex align='center' gap={12}>
+                            {currentMap
+                                ? <>
+                                    <Button onClick={handleExpandAll} variant="filled" color='default' shape="default" icon={expandAll ? <DownOutlined /> : <RightOutlined />}>
+                                        {expandAll ? "Collapse all" : "Expand all"}
+                                    </Button>
+                                    <Button onClick={handleShowAll} variant="filled" color='default' shape="default" icon={showAll ? <EyeInvisibleOutlined /> : <EyeOutlined />}>
+                                        {showAll ? "Hide all" : "Show all"}
+                                    </Button>
+                                </>
+                                : <>
 
+                                </>
+                            }
+                        </Flex>
                         <Divider type='vertical' style={{ margin: `0 ${layoutMargin}px`, borderColor: lineColor, height: "64%" }} />
                         <TableBackup />
                     </Flex>
@@ -1317,10 +1348,10 @@ const MindMap = () => {
 }
 const App = () => {
     // states
-    const [currentMap, setCurrentMap] = useState(null);
+    let [currentMap, setCurrentMap] = useState(null);
     let [modeTheme, setModeTheme] = useState("light")
     let [mapLayout, setMapLayout] = useState("spider")
-    const [screen, setScreen] = useState(0);
+    let [screen, setScreen] = useState(0);
     let [backupList, setBackupList] = useState([])
     let [mapList, setMapList] = useState([])
     // hooks
