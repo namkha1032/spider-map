@@ -18,7 +18,7 @@ import {
     CoffeeOutlined,
     ShareAltOutlined,
     EyeOutlined,
-    EyeInvisibleOutlined 
+    EyeInvisibleOutlined
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
@@ -113,7 +113,7 @@ function newNodeTemplate(color) {
         "nodeDescription": "",
         "edgeName": "",
         "nodeColor": color ? color : "neutral",
-        "showDescription": false,
+        "showDescription": true,
         "showChildren": true,
         "children": []
     }
@@ -524,11 +524,22 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
         e.preventDefault();
 
         // Get the pasted text from clipboard
-        const pastedText = e.clipboardData.getData('text');
+        let pastedText = e.clipboardData.getData('text');
 
         // Remove all newlines (both \n and \r\n) and replace with spaces
-        const cleanedText = formName == "nodeName" ? pastedText.toLowerCase() : pastedText.replace(/[\r\n]+/g, ' ')
-
+        let cleanedText = formName == "nodeName" ? pastedText.toLowerCase() : pastedText.replace(/[\r\n]+/g, ' ')
+        let match = cleanedText.match(/\b(1\d{3}|2\d{3})\b/);
+        if (match) {
+            // Find index of the matched year
+            let yearIndex = cleanedText.indexOf(match[0]);
+            // Return substring starting from the year
+            cleanedText = cleanedText.slice(yearIndex);
+            let parts = cleanedText.split(".");
+            if (parts.length > 1) {
+                parts[1] = ` **${parts[1].trim()}**`; // wrap second item
+            }
+            cleanedText = parts.join(".");
+        }
         // Get current cursor position
         const textarea = e.target;
         const start = textarea.selectionStart;
@@ -607,7 +618,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                     <Card
                         size={"small"}
                         onClick={(e) => {
-                            if (e.shiftKey) {
+                            if (e.altKey) {
                                 addSibling()
                             }
                         }}
@@ -663,13 +674,13 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                     <Typography.Text strong style={{ color: "inherit", flex: 1, whiteSpace: "nowrap" }}
 
                                         onDoubleClick={(e) => {
-                                            if (!e.shiftKey) {
+                                            if (!e.altKey) {
                                                 setShowNodeNameForm(true)
                                             }
                                         }}
                                     >{node.nodeName}</Typography.Text>
                                     <Button style={{ borderWidth: 0 }} type='text' shape='circle' size='small' onClick={(e) => {
-                                        if (!e.shiftKey && !e.ctrlKey) {
+                                        if (!e.altKey && !e.ctrlKey) {
                                             toggleShowDescription()
                                         }
                                     }} icon={node.nodeDescription != "" ? <BulbOutlined /> : <></>}>
@@ -715,7 +726,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                         </Form>
                                         : <div id='outerMarkdown'
                                             onDoubleClick={(e) => {
-                                                if (!e.shiftKey) {
+                                                if (!e.altKey) {
                                                     setShowDescriptionForm(true)
                                                 }
                                             }}
