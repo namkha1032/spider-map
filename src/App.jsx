@@ -18,7 +18,8 @@ import {
     CoffeeOutlined,
     ShareAltOutlined,
     EyeOutlined,
-    EyeInvisibleOutlined
+    EyeInvisibleOutlined,
+    CloudServerOutlined
 } from '@ant-design/icons';
 import Markdown from 'react-markdown'
 import rehypeKatex from 'rehype-katex'
@@ -773,7 +774,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                             <div
                                                 ref={descriptionRef}
                                                 onClick={handleSelectCopy}>
-                                                <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                                <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} style={{ margin: 0 }}>
                                                     {node.nodeDescription}
                                                 </Markdown>
                                             </div>
@@ -1102,6 +1103,26 @@ const TableBackup = () => {
             </>);
         }
     }
+    function displaySize() {
+        let totalBytes = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+
+            // Assuming UTF-16 encoding, each character takes 2 bytes.
+            // We also account for the size of the key itself.
+            totalBytes += (key.length * 2) + (value.length * 2);
+        }
+        const totalKB = totalBytes / 1024;
+        const totalMB = totalKB / 1024;
+        messageApi.success(<>
+            <Typography.Text>Total KB: </Typography.Text>
+            <Typography.Text strong>{totalKB.toFixed(2)} KB</Typography.Text>
+            <Typography.Text> - </Typography.Text>
+            <Typography.Text>Total MB: </Typography.Text>
+            <Typography.Text strong>{totalMB.toFixed(2)} MB</Typography.Text>
+        </>);
+    }
     // variables
     let tableColumn = [
         {
@@ -1228,7 +1249,10 @@ const TableBackup = () => {
                 }}
             />
             <Flex justify='space-between' style={{ marginTop: backupList.length > 0 ? 0 : 20 }}>
-                < Button onClick={loadDemo} variant="filled" color="default" icon={<CoffeeOutlined />}>Load demo</Button>
+                <Flex gap={"small"} align='center'>
+                    < Button onClick={loadDemo} variant="filled" color="default" icon={<CoffeeOutlined />}>Load demo</Button>
+                    < Button onClick={displaySize} type='primary' icon={<CloudServerOutlined />}>Show capacity</Button>
+                </Flex>
                 <Flex justify='flex-end' align='center' gap={"small"}>
                     < Button onClick={() => {
                         createNewMap()
