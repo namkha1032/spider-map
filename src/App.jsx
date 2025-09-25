@@ -538,8 +538,8 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
             let parts = cleanedText.split(".");
             if (parts.length > 1) {
                 parts[0] = parts[0].slice(0, 4)
-                parts[1] = ` **${parts[1].trim().replace(/^\*+|\*+$/g, '')}**`;
-                parts[2] = ` *${parts[2].trim().replace(/^\*+|\*+$/g, '')}*`;
+                parts[1] = ` **${parts[1].trim().replace(/^\*+|\*+$/g, '').trim()}**`;
+                parts[2] = ` *${parts[2].trim().replace(/^\*+|\*+$/g, '').trim()}*`;
             }
             cleanedText = parts.join(".");
         }
