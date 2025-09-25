@@ -255,6 +255,7 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
     let [showDescriptionForm, setShowDescriptionForm] = useState(false)
     let [showNodeNameForm, setShowNodeNameForm] = useState(false)
     // hooks
+    const descriptionRef = useRef(null);
     let antdTheme = theme.useToken()
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
@@ -536,7 +537,9 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
             cleanedText = cleanedText.slice(yearIndex);
             let parts = cleanedText.split(".");
             if (parts.length > 1) {
-                parts[1] = ` **${parts[1].trim()}**`; // wrap second item
+                parts[0] = parts[0].slice(0, 4)
+                parts[1] = ` **${parts[1].trim().replace(/^\*+|\*+$/g, '')}**`;
+                parts[2] = ` *${parts[2].trim().replace(/^\*+|\*+$/g, '')}*`;
             }
             cleanedText = parts.join(".");
         }
@@ -560,6 +563,32 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
             textarea.setSelectionRange(start + cleanedText.length, start + cleanedText.length);
         }, 0);
     };
+    async function handleSelectCopy() {
+        if (descriptionRef.current) {
+            // Select all text in the element
+            const range = document.createRange();
+            range.selectNodeContents(descriptionRef.current);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            try {
+                // Copy to clipboard
+                await navigator.clipboard.writeText(descriptionRef.current.textContent);
+                // setCopied(true);
+
+                // Reset the copied state after 2 seconds
+                // setTimeout(() => setCopied(false), 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+
+            // Clear selection after a brief moment
+            setTimeout(() => {
+                selection.removeAllRanges();
+            }, 100);
+        }
+    }
     function handleSubmitDescription(e) {
         if (e.ctrlKey && e.key === 'Enter') {
             e.preventDefault();
@@ -724,7 +753,10 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                                 </Flex>
                                             </Form.Item>
                                         </Form>
-                                        : <div id='outerMarkdown'
+                                        : <div
+                                            // ref={descriptionRef}
+                                            // onClick={handleSelectCopy}
+                                            id='outerMarkdown'
                                             onDoubleClick={(e) => {
                                                 if (!e.altKey) {
                                                     setShowDescriptionForm(true)
@@ -738,9 +770,13 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                         }
                                     `}
                                             </style>
-                                            <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} style={{ margin: 0 }}>
-                                                {node.nodeDescription}
-                                            </Markdown>
+                                            <div
+                                                ref={descriptionRef}
+                                                onClick={handleSelectCopy}>
+                                                <Markdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                                    {node.nodeDescription}
+                                                </Markdown>
+                                            </div>
                                         </div>}
                                 </>
                                 : <></>
