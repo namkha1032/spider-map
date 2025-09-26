@@ -404,14 +404,14 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
     ];
     // functions
     function handleRenameNode(query) {
-        const newName = query[`nodeName ${node.nodeID}`]
+        const newName = query[`nodeName_${node.nodeID}`]
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
         recursiveModify(cloneMap, node.nodeID, "nodeName", newName)
         setShowNodeNameForm(false)
         setCurrentMap(cloneMap)
     }
     function handleRewriteDescription(query) {
-        const newDes = query[`nodeDescription ${node.nodeID}`];
+        const newDes = query[`nodeDescription_${node.nodeID}`];
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
         recursiveModify(cloneMap, node.nodeID, "nodeDescription", newDes)
         setShowDescriptionForm(false)
@@ -494,15 +494,6 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
     function onFinishFailed(errorInfo) {
         console.log('Failed:', errorInfo);
     };
-    function handleKeyDownNodeName(e) {
-        if (e.key === "Escape") {
-            setShowNodeNameForm(false)
-        }
-        else if (e.ctrlKey && e.key === 'Enter') {
-            e.preventDefault();
-            form1.submit();
-        }
-    }
     function handleDragStart(e) {
         // e.preventDefault()
         e.dataTransfer.setData("currentNode", node.nodeID);
@@ -522,48 +513,58 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
         }
 
     }
-    function handlePaste(e, form, formName) {
-        e.preventDefault();
-
-        // Get the pasted text from clipboard
-        let pastedText = e.clipboardData.getData('text');
-
-        // Remove all newlines (both \n and \r\n) and replace with spaces
-        let cleanedText = formName == "nodeName" ? pastedText.toLowerCase() : pastedText.replace(/[\r\n]+/g, ' ')
-        let match = cleanedText.match(/\b(1\d{3}|2\d{3})\b/);
-        if (match) {
-            // Find index of the matched year
-            let yearIndex = cleanedText.indexOf(match[0]);
-            // Return substring starting from the year
-            cleanedText = cleanedText.slice(yearIndex);
-            let parts = cleanedText.split(".");
-            if (parts.length > 1) {
-                parts[0] = parts[0].slice(0, 4)
-                parts[1] = ` **${parts[1].trim().replace(/^\*+|\*+$/g, '').trim()}**`;
-                parts[2] = ` *${parts[2].trim().replace(/^\*+|\*+$/g, '').trim()}*`;
-            }
-            cleanedText = parts.join(".");
+    function handleKeyDownForm(e, form = null, formName = null) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            form.submit();
         }
-        // Get current cursor position
-        const textarea = e.target;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
+        else if (e.ctrlKey && e.key.toLowerCase() === "v") {
+            e.preventDefault();
 
-        // Get current value
-        const currentValue = textarea.value;
+            navigator.clipboard.readText().then((pastedText) => {
+                let cleanedText = pastedText
+                if (!e.shiftKey) {
+                    cleanedText = formName == "nodeName" ? pastedText.toLowerCase() : pastedText.replace(/[\r\n]+/g, ' ')
+                    let match = cleanedText.match(/\b(1\d{3}|2\d{3})\b/);
+                    if (match) {
+                        // Find index of the matched year
+                        let yearIndex = cleanedText.indexOf(match[0]);
+                        // Return substring starting from the year
+                        cleanedText = cleanedText.slice(yearIndex);
+                        let parts = cleanedText.split(".");
+                        if (parts.length > 1) {
+                            parts[0] = parts[0].slice(0, 4)
+                            parts[1] = ` **${parts[1].trim().replace(/^\*+|\*+$/g, '').trim()}**`;
+                            parts[2] = ` *${parts[2].trim().replace(/^\*+|\*+$/g, '').trim()}*`;
+                        }
+                        cleanedText = parts.join(".");
+                    }
+                }
 
-        // Insert cleaned text at cursor position
-        const newValue = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
+                // Get current cursor position
+                const areaComponent = e.target;
+                const start = areaComponent.selectionStart;
+                const end = areaComponent.selectionEnd;
 
-        // Update the form field value
-        const fieldName = `${formName} ${node.nodeID}`;
-        form.setFieldsValue({ [fieldName]: newValue });
+                // Get current value
+                const currentValue = areaComponent.value;
 
-        // Set cursor position after the pasted text
-        setTimeout(() => {
-            textarea.setSelectionRange(start + cleanedText.length, start + cleanedText.length);
-        }, 0);
-    };
+                // Insert cleaned text at cursor position
+                const newValue = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
+
+                // Update the form field value
+                const fieldName = `${formName} ${node.nodeID}`;
+                form.setFieldsValue({ [fieldName]: newValue });
+
+                // Set cursor position after the pasted text
+                setTimeout(() => {
+                    areaComponent.setSelectionRange(start + cleanedText.length, start + cleanedText.length);
+                }, 0);
+
+            })
+
+        }
+    }
     async function handleSelectCopy() {
         if (descriptionRef.current) {
             // Select all text in the element
@@ -590,12 +591,6 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
             }, 100);
         }
     }
-    function handleSubmitDescription(e) {
-        if (e.ctrlKey && e.key === 'Enter') {
-            e.preventDefault();
-            form2.submit();
-        }
-    };
 
     function toggleShowDescription() {
         let cloneMap = JSON.parse(JSON.stringify(currentMap))
@@ -678,16 +673,18 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                 form={form1}
                                 name={generateRandomString()}
                                 wrapperCol={{ span: 24 }}
-                                initialValues={{ [`nodeName ${node.nodeID}`]: node.nodeName, remember: true }}
+                                initialValues={{ [`nodeName_${node.nodeID}`]: node.nodeName, remember: true }}
                                 onFinish={handleRenameNode}
                                 onFinishFailed={onFinishFailed}
                                 autoComplete="off">
                                 <Space.Compact style={{ width: '100%' }}>
                                     <Form.Item
-                                        name={`nodeName ${node.nodeID}`}
+                                        name={`nodeName_${node.nodeID}`}
                                         style={{ marginBottom: 0, width: "100%" }}
                                     >
-                                        <Input autoFocus onKeyDown={handleKeyDownNodeName} onPaste={(e) => handlePaste(e, form1, "nodeName")} />
+                                        <Input autoFocus
+                                            onKeyDown={(e) => handleKeyDownForm(e, form1, "nodeName")}
+                                        />
                                     </Form.Item>
                                     {node.showDescription ? <Form.Item style={{ marginBottom: 0 }}>
                                         <Button onClick={() => { setShowNodeNameForm(false) }} icon={<CloseOutlined />} />
@@ -726,20 +723,26 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                             form={form2}
                                             name={generateRandomString()}
                                             wrapperCol={{ span: 24 }}
-                                            initialValues={{ [`nodeDescription ${node.nodeID}`]: node.nodeDescription, remember: true }}
+                                            initialValues={{ [`nodeDescription_${node.nodeID}`]: node.nodeDescription, remember: true }}
                                             onFinish={handleRewriteDescription}
                                             onFinishFailed={onFinishFailed}
                                             autoComplete="off"
                                         >
                                             <Form.Item
-                                                name={`nodeDescription ${node.nodeID}`}
+                                                name={`nodeDescription_${node.nodeID}`}
                                                 style={{ marginBottom: antdTheme.token.paddingSM }}
                                             >
-                                                <Input.TextArea autoFocus autoSize={{
-                                                    maxRows: 12
-                                                }}
-                                                    onPaste={(e) => handlePaste(e, form2, "nodeDescription")}
-                                                    onKeyDown={handleSubmitDescription}
+                                                <Input.TextArea
+                                                    ref={(input) => {
+                                                        if (input) {
+                                                            setTimeout(() => input.focus(), 120);
+                                                        }
+                                                    }}
+                                                    autoSize={{
+                                                        maxRows: 12
+                                                    }}
+                                                    onKeyDown={(e) => { handleKeyDownForm(e, form2, "nodeDescription") }}
+
                                                 />
                                             </Form.Item>
                                             <Form.Item style={{ marginBottom: 0 }}>
@@ -755,7 +758,6 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
                                             </Form.Item>
                                         </Form>
                                         : <div
-                                            // ref={descriptionRef}
                                             // onClick={handleSelectCopy}
                                             id='outerMarkdown'
                                             onDoubleClick={(e) => {
