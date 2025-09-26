@@ -551,9 +551,8 @@ const NodeCard = ({ node, setShowEdgeForm }) => {
 
                 // Insert cleaned text at cursor position
                 const newValue = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
-
                 // Update the form field value
-                const fieldName = `${formName} ${node.nodeID}`;
+                const fieldName = `${formName}_${node.nodeID}`;
                 form.setFieldsValue({ [fieldName]: newValue });
 
                 // Set cursor position after the pasted text
